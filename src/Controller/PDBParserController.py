@@ -1,41 +1,8 @@
 from Tkinter import * 
 from tkFileDialog import *
+from Model.PDBParser import PDBParser
 
-class PDBParser:	
-	OPTIONS = {}
-	OPTIONS['defaultextension'] = '.pdb'
-	OPTIONS['filetypes'] = [('PDB files','.pdb'),('ENT files','.ent'),('All files', '.*')]
-	REQUIREDRECORDTYPES = ['HEADER',
-				   'TITLE',
-				   'COMPND',
-				   'SOURCE',
-				   'KEYWDS',
-				   'EXPDTA',
-				   'AUTHOR',
-				   'REVDAT',
-				   #'REMARK 2',
-				   #'REMARK 3',
-				   'REMARK',
-				   'SEQRES',
-				   'CRYST1',
-				   'ORIGX1',																																																																																																								
-				   'ORIGX2',
-				   'ORIGX3',
-				   'SCALE1',
-				   'SCALE2',
-				   'SCALE3',
-				   'MASTER',
-				   'END',
-				   'HELIX',
-				   'SHEET']
-	COORDINATERECORDTYPES = ['ATOM',
-							'HETATM',
-							'HELIX',
-							'SHEET']
-	record_type_found = [0]*len(REQUIREDRECORDTYPES)
-	atomCoordenates = set()
-	IsValid = 1    
-
+class PDBParserController:			
 	def openFile(self):		
 		root = Tk()
 		root.withdraw()
@@ -79,7 +46,7 @@ class PDBParser:
 		except ValueError:
 			self.IsValid = 0
 
-pdbparser = PDBParser()
-pdbfile = pdbparser.openFile()
-pdbparser.readFile(pdbfile)
-pdbparser.validateFile()
+# pdbparser = PDBParser()
+# pdbfile = pdbparser.openFile()
+# pdbparser.readFile(pdbfile)
+# pdbparser.validateFile()
