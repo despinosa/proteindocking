@@ -28,7 +28,8 @@ class PDBParser:
 	COORDINATERECORDTYPES = ['ATOM',
 							'HETATM',
 							'HELIX',
-							'SHEET']
-	record_type_found = [0]*len(REQUIREDRECORDTYPES)
-	atomCoordenates = set()
-	IsValid = 1	
+							'SHEET']	
+	def __init__(self):		
+		self.atomCoordenates = set()
+		self.record_type_found = [0]*len(self.REQUIREDRECORDTYPES)	
+		self.IsValid = 1
