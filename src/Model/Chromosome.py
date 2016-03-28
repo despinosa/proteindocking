@@ -2,33 +2,42 @@ from Functions.Functions import Functions
 import random
 
 class Chromosome:
-	L_INDIVIDUAL = 10
+	L_CHROMOSOME = 10
+	MUTATION_PROBABILITY = 0.7
+
 	def __init__(self):
 		self.score = random.random();
 		self.age = 1;
-		self.chromosome = Functions.random_chromosome(self.L_INDIVIDUAL)
+		self.chromosome = Functions.random_chromosome(self.L_CHROMOSOME)
 
 	@classmethod
-	def constructor_knownAge(self,age):
-		self.score = 0
+	def constructor_crossover(self,age,chromosome):
+		self = Chromosome()
+		self.score = random.random();
 		self.age = age			
+		self.chromosome = chromosome
+		return self
 	
 	def __str__(self):
 		s = ""
-		for i in range(0,self.L_INDIVIDUAL):
+		for i in range(0,self.L_CHROMOSOME):
 			s += str(self.chromosome[i])
 		return s
 
-	def __cmp__(self,other):		
+	def __cmp__(self,other):				
 		if self.score < other.score:
 			return -1
 		elif self.score > other.score:
 			return 1
 		else:
-			return 0
-	def incrementAge():
-		self.chromosome.age += 1
-	# def mutate():
+			return 0	
+	def mutate(self):
+		if random.random() < self.MUTATION_PROBABILITY:
+			self.chromosome[int(round(random.random()*(self.L_CHROMOSOME-1)))]^=1
+		self.incrementAge()
+
+	def incrementAge(self):
+		self.age += 1
 
 	# def scoring():
 
