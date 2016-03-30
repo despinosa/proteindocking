@@ -1,15 +1,25 @@
 import random
+import numpy as np
 
 class Functions:
 	@staticmethod
-	def random_chromosome(L_INDIVIDUAL):
+	def random_chromosome_binary(L_INDIVIDUAL):
 		chromosome=[]
-		for i in range(0,L_INDIVIDUAL):
+		for i in xrange(0,L_INDIVIDUAL):
 			if random.random()<0.7:
 				chromosome.append(0)
 			else:
 				chromosome.append(1)
 		return chromosome
+
+	@staticmethod
+	def random_chromosome_numpy(L_INDIVIDUAL):				
+		return np.random.uniform(0,360,[1,L_INDIVIDUAL])
+
+	@staticmethod
+	def random_float_value():
+		return np.random.uniform(0,360)
+
 	@staticmethod	
 	def create_wheel(layer,previouslayer):
 		if(previouslayer != None):
@@ -22,10 +32,10 @@ class Functions:
 		Lwheel=n_individuals_aux*10
 		maxValue=max(population_aux)
 		acc=0
-		for p in range(n_individuals_aux):
+		for p in xrange(n_individuals_aux):
 			acc+=maxValue.score - population_aux[p].score
 		fraction=[]
-		for p in range(n_individuals_aux):
+		for p in xrange(n_individuals_aux):
 			fraction.append( float(maxValue.score - population_aux[p].score)/acc)
 			if fraction[-1]<=1.0/Lwheel:
 				fraction[-1]=1.0/Lwheel	
@@ -36,7 +46,7 @@ class Functions:
 
 		for f in fraction:
 			Np=int(f*Lwheel)
-			for i in range(Np):
+			for i in xrange(Np):
 				wheel.append(pc)
 			pc+=1
 		return wheel	
