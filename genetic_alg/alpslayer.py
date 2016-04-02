@@ -1,4 +1,4 @@
-from . import chromosome.Chromosome
+from chromosome import Chromosome
 from heapq import heapify, heappush, nsmallest
 from itertools import repeat
 from model import *

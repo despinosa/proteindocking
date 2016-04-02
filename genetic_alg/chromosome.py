@@ -1,16 +1,24 @@
 import scipy as sp
 
-random = sp.random.random
-randint = sp.radom.randint
+sp_rand = sp.random.random
+sp_randint = sp.random.randint
 
 class Chromosome(sp.ndarray):
     @classmethod
-    def setup(cls, fitness):
+    def setup(cls, fitness, encoding):
         cls.fitness = fitness
+        cls.encoding = encoding
+        cls.length = encoding.length
 
-    def __new__(cls, birth=1):
+    def __new__(cls, birth=1, iterable=None):
         self.birth = birth
-        return random((Chromosome.length,))
+        if iterable is not None:
+            arr = sp.concatenate([part[:] for part in iterable])
+            if arr.length != cls.length:
+                raise TypeError("longitud del cromosoma: %d".format(arr.length))
+            return arr
+        else:
+            return sp_rand((cls.length,))
 
     def __lt__(self, other):
         return self.score < other.score
@@ -33,5 +41,5 @@ class Chromosome(sp.ndarray):
         self.birth = getattr(obj, 'birth', None)
 
     def mutate(self):
-        self[randint(0, Chromosome.length)] = random()
-        self.score = fitness()
+        self[sp_randint(0, Chromosome.length)] = sp_rand()
+        self.score = self.fitness()
