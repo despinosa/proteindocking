@@ -1,4 +1,7 @@
-from alpslayer import ALPSLayer
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from .alpslayer import ALPSLayer
 from ..dockingalg import DockingAlg
 
 class ALPS(DockingAlg):

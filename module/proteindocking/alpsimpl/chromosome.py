@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import scipy as sp
 
 sp_rand = sp.random.random
@@ -8,17 +11,20 @@ class Chromosome(sp.ndarray):
     def setup(cls, fitness, encoding):
         cls.fitness = fitness
         cls.encoding = encoding
-        cls.length = encoding.length
+        cls.length = len(encoding)
 
-    def __new__(cls, birth=1, iterable=None):
-        self.birth = birth
-        if iterable is not None:
-            arr = sp.concatenate([part[:] for part in iterable])
+    def __new__(cls, birth=1, pieces=None):
+        # if input_array: arr = np.asarray(input_array).view(cls)
+        if pieces is not None:
+            arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
             if arr.length != cls.length:
-                raise TypeError("longitud del cromosoma: %d".format(arr.length))
-            return arr
+                raise TypeError("longitud incompatible: %d/%d".
+                                format(arr.length, cls.length))
         else:
-            return sp_rand((cls.length,))
+            arr = sp_rand((cls.length,)).view(cls)
+        arr.birth = birth
+        arr.score = arr.fitness()
+        return arr
 
     def __lt__(self, other):
         return self.score < other.score
@@ -28,17 +34,19 @@ class Chromosome(sp.ndarray):
         return self.score > other.score
     def __ge__(self, other):
         return self.score >= other.score
-
-    def __getattr__(self, name):
-        if name == 'score':
-            self.score = self.fitness()
-            return self.score
-        else:
-            return super(Chromosome, self).__getattr__(self, name)
+    def __nonzero__(self):
+        return True
 
     def __array_finalize__(self, obj):
         if obj is None: return
         self.birth = getattr(obj, 'birth', None)
+        self.score = getattr(obj, 'score', None)
+
+    def fitness(self):
+        raise NotImplementedError
+
+    encoding = None
+    length = None
 
     def mutate(self):
         self[sp_randint(0, Chromosome.length)] = sp_rand()

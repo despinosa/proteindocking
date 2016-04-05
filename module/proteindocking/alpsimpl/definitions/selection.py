@@ -1,4 +1,7 @@
-from qheap import merge
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from heapq import merge
 
 def plus(pop_size, new_pop, old_pop=None):
     """"Elitismo para lamdba más mu
@@ -10,7 +13,7 @@ def plus(pop_size, new_pop, old_pop=None):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    population = merge(new_pop, old_pop)
+    population = list(merge(new_pop, old_pop))
     return population[:pop_size]
 
 
