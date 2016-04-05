@@ -37,6 +37,9 @@ class Chromosome(sp.ndarray):
     def __nonzero__(self):
         return True
 
+    def __str__(self):
+        return "{:5f}: {}".format(self.score, super(Chromosome, self).__str__())
+
     def __array_finalize__(self, obj):
         if obj is None: return
         self.birth = getattr(obj, 'birth', None)

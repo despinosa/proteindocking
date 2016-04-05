@@ -1,4 +1,4 @@
-from .molecule import Molecule
+from molecule import Molecule
 
 class Protein(Molecule):
     """docstring for Protein"""

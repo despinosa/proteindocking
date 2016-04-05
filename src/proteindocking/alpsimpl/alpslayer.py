@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .chromosome import Chromosome
+from chromosome import Chromosome
 from heapq import heapify, heappush, merge, nsmallest
 from itertools import repeat
 from math import ceil
@@ -62,7 +62,7 @@ class ALPSLayer(Thread):
             off_size = len(offspring)
             if off_size > 0:
                 for _ in repeat(None, self.mutate_cycles): # mutación
-                    mutated = offspring.pop(randint(0, off_size))
+                    mutated = offspring.pop(randint(0, off_size-1))
                     mutated.mutate()
                     heappush(offspring, mutated)
             return offspring
@@ -87,8 +87,8 @@ class ALPSLayer(Thread):
         source = self.population
         if self.prev_layer is not None:
             source += self.prev_layer.population #! bloquear
-        offspring = reproduce(source)
         self.ready.set()
+        offspring = reproduce(source)
         offspring = mutate(offspring)
         if self.next_layer is not None:
             self.next_layer.ready.wait()
@@ -98,9 +98,10 @@ class ALPSLayer(Thread):
         self.population = self.population[:self.pop_size] # trim
         self.generation += 1
 
+
     run = iterate
+
 
     def join(self):
         super(ALPSLayer, self).join()
         super(ALPSLayer, self).__init__()
-

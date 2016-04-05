@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .alpslayer import ALPSLayer
-from ..dockingalg import DockingAlg
+from alpslayer import ALPSLayer
+from dockingalg import DockingAlg
 
 class ALPS(DockingAlg):
     def __init__(self, complex, encoding, fitness):
