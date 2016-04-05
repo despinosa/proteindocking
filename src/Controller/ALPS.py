@@ -18,7 +18,6 @@ class ALPS:
 			max_age = (max_age * 2) - 1
 			self.layers[i] = ALPSLayer(max_age,self.n_individuals)
 			self.layers[i].generate_population()	
-
 	def runALPS(self):
 		gen = 0
 		while not ALPS.converge():

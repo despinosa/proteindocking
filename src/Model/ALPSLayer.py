@@ -84,6 +84,7 @@ class ALPSLayer:
 		descendant2.incrementAge()
 
 		return descendant1,descendant2	
+	def tourney(self, previous_layer, upper_layer):
 
 	def evolve(self,previous_layer,upper_layer):
 		try:
@@ -101,4 +102,4 @@ class ALPSLayer:
 				nextGeneration[(N_ELITISM + 1) + 2*i] = descendant2
 			self.population = nextGeneration[:]
 		except:
-			print "Error"	
+			print "Error"

@@ -8,7 +8,7 @@ class Chromosome:
 	def __init__(self):
 		self.score = random.random();
 		self.age = 1;
-		self.chromosome = Functions.random_chromosome_numpy(self.L_CHROMOSOME)
+		self.chromosome = Functions.random_chromosome_numpy(self.L_CHROMOSOME)		
 		print self.chromosome
 
 	@classmethod
