@@ -13,7 +13,7 @@ class Chromosome:
 	@classmethod
 	def constructor_crossover(self,age,chromosome):
 		self = Chromosome()
-		self.score = random.random();
+		self.score = random.random()
 		self.age = age			
 		self.chromosome = chromosome
 		return self

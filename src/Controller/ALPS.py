@@ -21,28 +21,29 @@ class ALPS:
 
 	def generate_layers(self):
 		max_age = 2
-		for i in xrange(0,self.n_layers):			
-			max_age = (max_age * 2) - 1
-			self.layers[i] = ALPSLayer(max_age,self.n_individuals,self.n_elitism,self.n_parents,self.tourn_size)
+		for i in xrange(0,self.n_layers):
+			if i == self.n_layers-1:
+				max_age = float('inf')
+			else:
+				max_age = (max_age * 2) - 1 #AGE GAP				
+			self.layers[i] = ALPSLayer(max_age,self.n_individuals,self.n_elitism,self.n_parents,self.tourn_size)			
 		self.layers[0].generate_population()	
+
+	def assign_layers(self):
+		for i, lay in enumerate(self.layers[1:]):
+			lay.previous_layer = self.layers[i-1]
+		for i, lay in enumerate(self.layers[:-1]):
+			lay.next_layer = self.layers[i+1]
 
 	def run(self):		
 		while not self.converge():
-			for i in xrange(self.n_layers-1,-1,-1):			
-				upperLayer = None
-				if i<self.n_layers-1:
-					upperLayer = self.layers[i+1]
-
+			for i in xrange(self.n_layers-1,-1,-1):							
 				if (i == 0) and (self.gen%self.age_gap == 0):
-					self.layers[i].generate_population()						
-				else:
-					if (i != 0):
-						lowerLayer = self.layers[i-1]	
-						if lowerLayer.populated and self.layers[i].populated:
-							self.layers[i].evolve(lowerLayer,upperLayer)
-					else:
-						self.layers[i].evolve(None,upperLayer)						
+					self.layers[i].generate_population()										
+				self.layers[i].evolve()		
+				#print self.gen						
 				self.gen += 1
+				
 				
 	def printpruebas(self):
 		for i in xrange(0,self.n_layers):
@@ -53,7 +54,8 @@ class ALPS:
  				print self.layers[i]
 
 
-hola = ALPS(12,10,2,2,5,25,3)
+hola = ALPS(10,200,5,2,5,100,3)
 hola.generate_layers()
+hola.assign_layers()
 hola.run()
 #hola.printpruebas()

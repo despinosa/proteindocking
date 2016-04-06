@@ -2,18 +2,21 @@ from Model.Chromosome import Chromosome
 from Functions.Functions import Functions
 import random
 import threading
+import traceback
 import numpy as np
 
 
 class ALPSLayer(threading.Thread):	
-	def __init__(self,max_age,n_individuals,n_elitism,n_parents,tourn_size):
+	def __init__(self,max_age,n_individuals,n_elitism,n_parents,tourn_size,previous_layer=None,next_layer=None):
 		super(ALPSLayer, self).__init__()
 		self.max_age = max_age
 		self.n_individuals = n_individuals		
-		self.population = list()	
+		self.population = [Chromosome] * self.n_individuals	
 		self.n_elitism = n_elitism
 		self.n_parents = n_parents
-		self.tourn_size = tourn_size
+		self.tourn_size = tourn_size		
+		self.previous_layer = previous_layer
+		self.next_layer = next_layer
 		self.nextGeneration = None
 		self.populated = 0
 
@@ -24,16 +27,15 @@ class ALPSLayer(threading.Thread):
 			s += "AGE:" + str(self.population[i].age)
 		return s
 	
-	def generate_population(self):		
-		self.population = [Chromosome] * self.n_individuals	
+	def generate_population(self):				
 		for i in xrange(0,self.n_individuals):					
 			self.population[i] = Chromosome()	
 		self.populated = 1
 
 	def elitism(self):
-		for i in xrange(0,self.n_elitism):
-			self.population[i].incrementAge()
-			self.nextGeneration[i] = self.population[i]
+		for i in xrange(0,self.n_elitism):						
+			#self.checkMigrate(self.population[i])
+			self.nextGeneration[i].incrementAge()			
 
 	def crossover_roulette(self,parent1,parent2,previous_layer,upper_layer): # cruzamiento		
 		CROSSOVER_POINT = random.randint(1,Chromosome.L_CHROMOSOME - 1)		
@@ -64,6 +66,11 @@ class ALPSLayer(threading.Thread):
 		descendant2.incrementAge()
 		return descendant1,descendant2	
 
+	def checkMigrate(self,individual):
+		if individual.age > self.max_age and self.next_layer is not None:			
+			self.next_layer.population.append(individual)			
+			self.next_layer.populated = 1			
+
 	def crossover(self,parents):		
 		CROSSOVER_POINT = random.randint(1,Chromosome.L_CHROMOSOME - 1)
 		newChromosome1 = parents[0].chromosome[0:CROSSOVER_POINT]
@@ -72,32 +79,29 @@ class ALPSLayer(threading.Thread):
 		newChromosome2 = np.append(newChromosome2,parents[0].chromosome[CROSSOVER_POINT:Chromosome.L_CHROMOSOME],0)		
 		return newChromosome1,newChromosome2
 
-	def generateOffspring(self,previous_layer,upper_layer):
-		parents = self.tourney(previous_layer)	
-		newAge = parents[0].age if parents[0].age >= parents[1].age else parents[1].age
+	def reproduce(self):
+		parents = self.tourney()	
+		
 		newChromosome1,newChromosome2 = self.crossover(parents)
-		descendant1 = Chromosome.constructor_crossover(newAge,newChromosome1)
-		descendant2 = Chromosome.constructor_crossover(newAge,newChromosome2)									
-		descendant1.incrementAge()
-		descendant2.incrementAge()
-		if(descendant1.age >= self.max_age):
-			upper_layer.population.append(descendant1)
-			upper_layer.populated = 1			
-		if(descendant2.age >= self.max_age):
-			upper_layer.population.append(descendant2)	
-			upper_layer.populated = 1			
+				
+		newAge = parents[0].age if parents[0].age >= parents[1].age else parents[1].age
+		descendant1 = Chromosome.constructor_crossover(newAge+1,newChromosome1)
+		descendant2 = Chromosome.constructor_crossover(newAge+1,newChromosome2)												
+
+		#self.checkMigrate(descendant1)
+		#self.checkMigrate(descendant2)
+
 		return descendant1,descendant2				
 
-
-	def tourney(self, previous_layer):
-		if previous_layer == None:
+	def tourney(self):
+		if self.previous_layer == None:
 			source = self.population
 		else:
-			source = previous_layer.population+self.population
+			source = self.previous_layer.population+self.population
 		source_size = len(source)
 		tournament = random.sample(source, min(self.tourn_size,source_size))				
 		tournament.sort()						
-		return tournament[:self.n_parents]		
+		return tournament[:self.n_parents]
 
 	def buildNextGeneration(self,i,descendant1,descendant2):
 		self.nextGeneration[self.n_elitism + 2*i] = descendant1
@@ -106,20 +110,22 @@ class ALPSLayer(threading.Thread):
 	def replacement(self):
 		self.population = self.nextGeneration[:]		
 
-	def evolve(self,previous_layer,upper_layer):
-		try:
-			self.population.sort()		
-			self.nextGeneration = self.population[:]
-			self.elitism()
-			# roulette = Functions.create_wheel(self,previous_layer)
-			for i in xrange(0,(len(self.population)-self.n_elitism)/2):									
-				descendant1, descendant2 = self.generateOffspring(previous_layer,upper_layer)
-				descendant1.mutate()		
-				descendant2.mutate()
-				self.buildNextGeneration(i,descendant1,descendant2)
-			################################################################################################################	
-			self.replacement()
+	def evolve(self):		
+		try:				
+			if self.populated:				
+				self.population.sort()		
+				self.nextGeneration = self.population[:]				
+				self.elitism()					
+				for i in xrange(0,(self.n_individuals-self.n_elitism)/2):									
+					descendant1, descendant2 = self.reproduce()	
+					descendant1.mutate()		
+					descendant2.mutate()
+					self.buildNextGeneration(i,descendant1,descendant2)
+				################################################################################################################	
+				self.replacement()
 		except Exception as ex:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
-			print message	
+			traceback.print_exc()
+			print message			
+			quit()
