@@ -14,7 +14,7 @@ class ALPS(object):
     def __init__(self):
         Chromosome.setup(random_fitness, {1:'a', 2:'b', 3:'c'})
         ALPSLayer.setup(200, 0.1, 0.8, 5, plus, single_point)
-        self.layers = [ALPSLayer(i*10) for i in xrange(1, 6)]
+        self.layers = [ALPSLayer(10*i) for i in xrange(1, 3)]
         for i, lay in enumerate(self.layers[1:]):
             lay.prev_layer = self.layers[i-1]
         for i, lay in enumerate(self.layers[:-1]):

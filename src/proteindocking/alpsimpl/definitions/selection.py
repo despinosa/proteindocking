@@ -14,7 +14,9 @@ def plus(pop_size, new_pop, old_pop=None):
     old_pop ~ población de tamaño mu de individuos viejos
     """
     population = list(merge(new_pop, old_pop))
-    return population[:pop_size]
+    tmp_pop = population[:pop_size]
+    del population
+    return tmp_pop
 
 
 def comma(pop_size, new_pop, old_pop=None):
@@ -27,4 +29,6 @@ def comma(pop_size, new_pop, old_pop=None):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    return new_pop[:pop_size]
+    tmp_pop = new_pop[:pop_size]
+    del new_pop
+    return tmp_pop

@@ -18,6 +18,7 @@ class ALPSLayer(Thread):
         self.generation = 1
         self.population = []
         self.ready = Event()
+        self.ready.clear()
 
     @classmethod
     def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size, elitism,
@@ -69,21 +70,21 @@ class ALPSLayer(Thread):
 
         def redistribute():
             if self.prev_layer is None: # primer capa
-                if self.generation % self.max_age == 0:
+                if self.generation % self.max_age == 0 and
+                        self.next_layer is None:
                     self.next_layer.population = list(
                         merge(self.next_layer.population, self.population)
                     ) #! bloquear
                     self.reset_pop()
-            elif self.next_layer is not None: # capa intermedia
+            if self.next_layer is not None: # capa intermedia
                 elders = []
-                for i, individual in enumerate(self.population):
+                for individual in self.population:
                     if self.max_age < self.generation - individual.birth:
-                        heappush(elders, self.population.pop(i))
+                        heappush(elders, self.population.remove(individual))
                 self.next_layer.population = list(
                     merge(self.next_layer.population, elders)
                 ) #! bloquear
 
-        self.ready.clear()
         source = self.population
         if self.prev_layer is not None:
             source += self.prev_layer.population #! bloquear
@@ -95,7 +96,9 @@ class ALPSLayer(Thread):
         self.population = self.elitism(self.pop_size, offspring,
                                        self.population)
         redistribute()
-        self.population = self.population[:self.pop_size] # trim
+        trim = self.population[:self.pop_size] # trim
+        del self.population
+        self.population = trim
         self.generation += 1
 
 
@@ -105,3 +108,4 @@ class ALPSLayer(Thread):
     def join(self):
         super(ALPSLayer, self).join()
         super(ALPSLayer, self).__init__()
+        self.ready.clear()
