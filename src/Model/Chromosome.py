@@ -8,8 +8,7 @@ class Chromosome:
 	def __init__(self):
 		self.score = random.random();
 		self.age = 1;
-		self.chromosome = Functions.random_chromosome_numpy(self.L_CHROMOSOME)		
-		print self.chromosome
+		self.chromosome = Functions.random_chromosome_numpy(self.L_CHROMOSOME)			
 
 	@classmethod
 	def constructor_crossover(self,age,chromosome):
@@ -29,8 +28,8 @@ class Chromosome:
 			return 1
 		else:
 			return 0	
-	def mutate(self):
-		if random.random() < self.MUTATION_PROBABILITY:
+	def mutate(self):		
+		if random.random() < self.MUTATION_PROBABILITY:			
 			self.chromosome[random.randint(0,self.L_CHROMOSOME-1)] = Functions.random_float_value()		
 
 	def incrementAge(self):

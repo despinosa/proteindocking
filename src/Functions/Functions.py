@@ -2,19 +2,13 @@ import random
 import numpy as np
 
 class Functions:
-	@staticmethod
-	def random_chromosome_binary(L_INDIVIDUAL):
-		chromosome=[]
-		for i in xrange(0,L_INDIVIDUAL):
-			if random.random()<0.7:
-				chromosome.append(0)
-			else:
-				chromosome.append(1)
-		return chromosome
 
 	@staticmethod
 	def random_chromosome_numpy(L_INDIVIDUAL):				
-		return np.random.uniform(0,360,[1,L_INDIVIDUAL])
+		chromosome = [np.float] * L_INDIVIDUAL
+		for i in xrange(0,L_INDIVIDUAL):
+			chromosome[i] = np.around(np.random.uniform(0,360),decimals=3)
+		return chromosome
 
 	@staticmethod
 	def random_float_value():
