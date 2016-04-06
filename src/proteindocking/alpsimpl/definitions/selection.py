@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from heapq import merge
-
 def plus(pop_size, new_pop, old_pop=None):
     """"Elitismo para lamdba más mu
 
@@ -13,10 +11,10 @@ def plus(pop_size, new_pop, old_pop=None):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    population = list(merge(new_pop, old_pop))
-    tmp_pop = population[:pop_size]
-    del population
-    return tmp_pop
+    population = new_pop + old_pop
+    population.sort()
+    del population[:pop_size]
+    return population
 
 
 def comma(pop_size, new_pop, old_pop=None):
@@ -29,6 +27,5 @@ def comma(pop_size, new_pop, old_pop=None):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    tmp_pop = new_pop[:pop_size]
-    del new_pop
-    return tmp_pop
+    del new_pop[pop_size:]
+    return new_pop

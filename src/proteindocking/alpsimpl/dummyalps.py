@@ -7,29 +7,26 @@ from definitions.crossover import single_point
 from definitions.fitness import random_fitness
 from definitions.selection import plus
 
-def stop_condition(alpslayer):
-    return alpslayer.generation > 250
+def stop_condition(generation):
+    return generation > 25000
 
 class ALPS(object):
     def __init__(self):
         Chromosome.setup(random_fitness, {1:'a', 2:'b', 3:'c'})
         ALPSLayer.setup(200, 0.1, 0.8, 5, plus, single_point)
-        self.layers = [ALPSLayer(10*i) for i in xrange(1, 3)]
+        self.layers = [ALPSLayer(10*i) for i in xrange(1, 11)]
         for i, lay in enumerate(self.layers[1:]):
             lay.prev_layer = self.layers[i-1]
         for i, lay in enumerate(self.layers[:-1]):
             lay.next_layer = self.layers[i+1]
 
     def run(self):
-        while not stop_condition(self.layers[0]):
+        while not stop_condition(ALPSLayer.generation):
             for lay in self.layers:
                 lay.start()
             for lay in self.layers:
                 lay.join()
-            try:
-                print "best: " + self.layers[-1].population[0]
-            except IndexError:
-                pass # print "nada"
+            ALPSLayer.generation += 1
 
 if __name__ == '__main__':
     a = ALPS()
