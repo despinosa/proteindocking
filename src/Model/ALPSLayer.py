@@ -11,7 +11,7 @@ class ALPSLayer(threading.Thread):
 		super(ALPSLayer, self).__init__()
 		self.max_age = max_age
 		self.n_individuals = n_individuals		
-		self.population = [Chromosome] * self.n_individuals	
+		self.population = []
 		self.n_elitism = n_elitism
 		self.n_parents = n_parents
 		self.tourn_size = tourn_size		
@@ -19,6 +19,10 @@ class ALPSLayer(threading.Thread):
 		self.next_layer = next_layer
 		self.nextGeneration = None
 		self.populated = 0
+		self.ready = threading.Event()
+		self.ready.clear()
+
+	generation = 1
 
 	def __str__(self):
 		s = ""
@@ -28,13 +32,13 @@ class ALPSLayer(threading.Thread):
 		return s
 	
 	def generate_population(self):				
+		self.population = [Chromosome] * self.n_individuals
 		for i in xrange(0,self.n_individuals):					
 			self.population[i] = Chromosome()	
 		self.populated = 1
 
 	def elitism(self):
-		for i in xrange(0,self.n_elitism):						
-			#self.checkMigrate(self.population[i])
+		for i in xrange(0,self.n_elitism):									
 			self.nextGeneration[i].incrementAge()			
 
 	def crossover_roulette(self,parent1,parent2,previous_layer,upper_layer): # cruzamiento		
@@ -86,10 +90,7 @@ class ALPSLayer(threading.Thread):
 				
 		newAge = parents[0].age if parents[0].age >= parents[1].age else parents[1].age
 		descendant1 = Chromosome.constructor_crossover(newAge+1,newChromosome1)
-		descendant2 = Chromosome.constructor_crossover(newAge+1,newChromosome2)												
-
-		#self.checkMigrate(descendant1)
-		#self.checkMigrate(descendant2)
+		descendant2 = Chromosome.constructor_crossover(newAge+1,newChromosome2)														
 
 		return descendant1,descendant2				
 
@@ -107,12 +108,16 @@ class ALPSLayer(threading.Thread):
 		self.nextGeneration[self.n_elitism + 2*i] = descendant1
 		self.nextGeneration[(self.n_elitism + 1) + 2*i] = descendant2
 
-	def replacement(self):
-		self.population = self.nextGeneration[:]		
+	def replacement(self):		
+		self.population = self.nextGeneration[:]
+
+	def redistribute(self):		
+		if self.next_layer is not None:					
+			self.next_layer.population = self.population			
 
 	def evolve(self):		
-		try:				
-			if self.populated:				
+		try:							
+			if len(self.population) > 0:						
 				self.population.sort()		
 				self.nextGeneration = self.population[:]				
 				self.elitism()					
@@ -120,12 +125,34 @@ class ALPSLayer(threading.Thread):
 					descendant1, descendant2 = self.reproduce()	
 					descendant1.mutate()		
 					descendant2.mutate()
-					self.buildNextGeneration(i,descendant1,descendant2)
-				################################################################################################################	
+					self.buildNextGeneration(i,descendant1,descendant2)				
+				self.ready.set()
+				################################################################################################################				
+				if self.next_layer is not None:
+					self.next_layer.ready.wait()				
 				self.replacement()
+
+				if self.previous_layer is not None:
+					if(self.generation%(self.max_age - self.previous_layer.max_age) == 0):
+						self.redistribute()
+				else:
+					if(self.generation%(self.max_age) == 0):
+						self.redistribute()
+						self.generate_population()									
+			else:
+				self.ready.set()	
+			#print "GENERACION" + str(self.generation)
+			print self.max_age
+			print len(self.population)		
 		except Exception as ex:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
 			traceback.print_exc()
 			print message			
 			quit()
+
+	run = evolve
+	def join(self):
+		super(ALPSLayer, self).join()
+		super(ALPSLayer, self).__init__()
+		self.ready.clear()

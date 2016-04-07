@@ -1,7 +1,7 @@
 from Model.ALPSLayer import ALPSLayer
 import threading
 
-class ALPS:		
+class ALPS(object):		
 	def __init__(self,n_layers,n_individuals,n_elitism,n_parents,tourn_size,maximum_generations,age_gap):
 		self.layers = [ALPSLayer] * n_layers
 		self.n_layers = n_layers
@@ -9,13 +9,12 @@ class ALPS:
 		self.n_parents = n_parents
 		self.n_elitism = n_elitism
 		self.tourn_size = tourn_size		
-		self.maximum_generations = maximum_generations
-		self.gen = 0
+		self.maximum_generations = maximum_generations	
 		self.age_gap = age_gap
 
 	def converge(self):
 		convergence = 0
-		if convergence or (self.gen >= self.maximum_generations):
+		if convergence or (ALPSLayer.generation >= self.maximum_generations):
 			return 1
 		return 0
 
@@ -36,13 +35,12 @@ class ALPS:
 			lay.next_layer = self.layers[i+1]
 
 	def run(self):		
-		while not self.converge():
-			for i in xrange(self.n_layers-1,-1,-1):							
-				if (i == 0) and (self.gen%self.age_gap == 0):
-					self.layers[i].generate_population()										
-				self.layers[i].evolve()		
-				#print self.gen						
-				self.gen += 1
+		while not self.converge():								
+			for lay in self.layers:
+				lay.start()
+			for lay in self.layers:
+				lay.join()					
+			ALPSLayer.generation += 1						
 				
 				
 	def printpruebas(self):
@@ -50,11 +48,11 @@ class ALPS:
 			if self.layers[i].populated:
 				print "LAYER" + str(i)
 				print "MAX_AGE" + str(self.layers[i].max_age)
-				print "INDIVIDUOS" + str(len(self.layers[i].population))
- 				print self.layers[i]
+				#print "INDIVIDUOS" + str(len(self.layers[i].population))
+ 				#print self.layers[i]
 
 
-hola = ALPS(10,200,5,2,5,100,3)
+hola = ALPS(10,200,5,2,5,250,3)
 hola.generate_layers()
 hola.assign_layers()
 hola.run()
