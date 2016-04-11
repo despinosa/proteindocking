@@ -13,7 +13,7 @@ class Chromosome(sp.ndarray):
         cls.encoding = encoding
         cls.length = len(encoding)
 
-    def __new__(cls, birth=1, pieces=None):
+    def __new__(cls, birth=0, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
             arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)

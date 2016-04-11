@@ -6,3 +6,4 @@ if __name__ == '__main__':
     start = datetime.now()
     a.run()
     print datetime.now() - start
+    print a.layers[-1].population[0]

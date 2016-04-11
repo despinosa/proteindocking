@@ -13,7 +13,7 @@ def plus(pop_size, new_pop, old_pop=None):
     """
     population = new_pop + old_pop
     population.sort()
-    del population[:pop_size]
+    del population[pop_size:]
     return population
 
 

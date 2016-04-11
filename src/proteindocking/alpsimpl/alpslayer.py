@@ -19,7 +19,6 @@ class ALPSLayer(Thread):
             self.min_age = prev_layer.max_age
         else:
             self.min_age = 0
-        self.first = None
         self.age_gap = self.max_age - self.min_age
         self.prev_layer = prev_layer
         self.next_layer = next_layer
@@ -28,15 +27,20 @@ class ALPSLayer(Thread):
         self.ready.clear()
 
     @classmethod
-    def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size, elitism,
-              crossover, n_parents=2):
+    def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size,
+              stop_condition, elitism,  crossover, n_parents=2):
         cls.pop_size = pop_size
+        cls.stop_condition = classmethod(stop_condition)
         cls.crossover = staticmethod(crossover)
         cls.elitism = staticmethod(elitism)
         cls.tourn_size = tourn_size
         cls.mutate_cycles = int(ceil(mutate_rate * pop_size))
         cls.reprod_cycles = int(ceil(mating_rate * pop_size / 2))
         cls.n_parents = n_parents
+
+    @classmethod
+    def stop_condition(cls):
+        raise NotImplementedError
 
     @staticmethod
     def crossover(*args):
@@ -46,72 +50,71 @@ class ALPSLayer(Thread):
     def elitism(*args):
         raise NotImplementedError
 
-    generation = 1
     n_parents = 2
+    generation = 0
+
 
     def rand_pop(self):
         self.population = []
-        for _ in repeat(self.pop_size):
+        for _ in repeat(None, self.pop_size):
             insort(self.population, Chromosome())
 
+
+    def distribute(self):
+        for i, individual in enumerate(self.population):
+            if self.generation - individual.birth >= self.max_age:
+                insort(self.next_layer.population, self.population.pop(i))
+        if self.prev_layer is None:
+            if self.generation % self.max_age == 0:
+                self.rand_pop()
+            self.__class__.generation += 1
+
+
     def iterate(self):
-        def reproduce(source):
+        def reproduce(pool):
             offspring = []
-            source_size = len(source)
-            if source_size > self.n_parents:
+            if len(pool) >= self.tourn_size:
                 for _ in repeat(None, self.reprod_cycles):
-                    tournament = sample(source, min(self.tourn_size,
-                                                    source_size))
+                    tournament = sample(pool, self.tourn_size)
                     parents = nsmallest(self.n_parents, tournament)
                     for child in self.crossover(*parents):
-                        insort(offspring, child)
+                        insort(offspring, child) # n
             return offspring
 
         def mutate(offspring):
             off_size = len(offspring)
-            if off_size > 0:
+            if off_size >= 1:
                 for _ in repeat(None, self.mutate_cycles): # mutación
                     mutated = offspring.pop(randint(0, off_size-1))
                     mutated.mutate()
                     insort(offspring, mutated)
             return offspring
 
-        def redistribute():
-            self.next_layer.population += self.population
-            self.next_layer.population.sort()
-            if self.prev_layer is None:
-                self.rand_pop()
-            else:
-                self.population = []
-
-        if self.min_age is None and self.prev_layer is not None:
-            self.min_age = (self.prev_layer.max_age if self.prev_layer is None
-                                                    else 0)
-        if self.age_gap is None:
-            self.age_gap = (self.max_age - self.min_age if self.next_layer is
-                                                        not None else maxint)
-        source = self.population
-        if self.prev_layer is not None and self.generation > self.min_age:
-            if self.first == None:
-                self.first = self.generation
-            source += self.prev_layer.population #! bloquear
+        del self.population[self.pop_size:] # trim
+        pool = self.population
+        if self.prev_layer is not None: # and self.generation > self.min_age:
+            pool += self.prev_layer.population[:] #! bloquear
+            self.prev_layer.ready.wait()
         self.ready.set()
-        offspring = reproduce(source)
+        offspring = reproduce(pool)
         offspring = mutate(offspring)
         if self.next_layer is not None:
             self.next_layer.ready.wait()
         self.population = self.elitism(self.pop_size, offspring,
                                        self.population)
-        if (self.generation % self.age_gap == self.first and
-                self.next_layer is not None):
-            redistribute()
-        del self.population[self.pop_size:] # trim
-
-
-    run = iterate
-
-
-    def join(self):
-        super(ALPSLayer, self).join()
-        super(ALPSLayer, self).__init__()
+        if self.next_layer is not None:
+            self.distribute()
         self.ready.clear()
+
+
+    def run(self):
+        if self.prev_layer is None:
+            self.distribute()
+        while not self.stop_condition():
+            self.iterate()
+
+
+    # def join(self):
+    #     super(ALPSLayer, self).join()
+    #     super(ALPSLayer, self).__init__()
+    #     print self.population
