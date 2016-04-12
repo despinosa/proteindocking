@@ -11,7 +11,6 @@ def plus(pop_size, new_pop, old_pop=None):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    for ind in old_pop: ind.increment_age()
     population = new_pop + old_pop
     population.sort()
     del population[pop_size:]
