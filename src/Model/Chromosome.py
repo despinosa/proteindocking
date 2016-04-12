@@ -1,5 +1,6 @@
 from Functions.Functions import Functions
 import random
+import bisect
 
 class Chromosome:
 	L_CHROMOSOME = 50
@@ -14,7 +15,7 @@ class Chromosome:
 	def constructor_crossover(self,age,chromosome):
 		self = Chromosome()
 		self.score = random.random()
-		self.age = age			
+		self.age = age
 		self.chromosome = chromosome
 		return self
 	

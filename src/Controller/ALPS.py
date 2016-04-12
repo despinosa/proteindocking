@@ -35,9 +35,12 @@ class ALPS(object):
 			lay.next_layer = self.layers[i+1]
 
 	def run(self):		
-		while not self.converge():								
+		i = 0;
+		while not self.converge():											
 			for lay in self.layers:
 				lay.start()
+				i += 1
+				print i
 			for lay in self.layers:
 				lay.join()					
 			ALPSLayer.generation += 1						

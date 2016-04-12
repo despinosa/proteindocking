@@ -7,11 +7,14 @@ import numpy as np
 
 
 class ALPSLayer(threading.Thread):	
-	def __init__(self,max_age,n_individuals,n_elitism,n_parents,tourn_size,previous_layer=None,next_layer=None):
+	def __init__(self,max_age,n_individuals,n_elitism,n_parents,tourn_size,population=None,previous_layer=None,next_layer=None):
 		super(ALPSLayer, self).__init__()
 		self.max_age = max_age
 		self.n_individuals = n_individuals		
-		self.population = []
+		if population == None:
+			self.population = []
+		else:
+			self.population = population
 		self.n_elitism = n_elitism
 		self.n_parents = n_parents
 		self.tourn_size = tourn_size		
@@ -21,6 +24,9 @@ class ALPSLayer(threading.Thread):
 		self.populated = 0
 		self.ready = threading.Event()
 		self.ready.clear()
+	
+	def layerjoin(self,max_age,n_individuals,n_elitism,n_parents,tourn_size,population=None,previous_layer=None,next_layer=None):
+		self = ALPSLayer(max_age,n_individuals,n_elitism,n_parents,tourn_size,population,previous_layer,next_layer)		
 
 	generation = 1
 
@@ -132,18 +138,15 @@ class ALPSLayer(threading.Thread):
 					self.next_layer.ready.wait()				
 				self.replacement()
 
-				if self.previous_layer is not None:
-					if(self.generation%(self.max_age - self.previous_layer.max_age) == 0):
-						self.redistribute()
-				else:
+				if self.previous_layer is None:					
 					if(self.generation%(self.max_age) == 0):
 						self.redistribute()
 						self.generate_population()									
 			else:
 				self.ready.set()	
 			#print "GENERACION" + str(self.generation)
-			print self.max_age
-			print len(self.population)		
+			# print self.max_age
+			# print len(self.population)		
 		except Exception as ex:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
@@ -154,5 +157,6 @@ class ALPSLayer(threading.Thread):
 	run = evolve
 	def join(self):
 		super(ALPSLayer, self).join()
+		#self.layerjoin(self.max_age,self.n_individuals,self.n_elitism,self.n_parents,self.tourn_size,self.population,self.previous_layer,self.next_layer)		
 		super(ALPSLayer, self).__init__()
 		self.ready.clear()
