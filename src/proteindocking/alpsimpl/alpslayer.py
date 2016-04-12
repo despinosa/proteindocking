@@ -27,8 +27,8 @@ class ALPSLayer(Thread):
         self.ready.clear()
 
     @classmethod
-    def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size,
-              stop_condition, elitism,  crossover, n_parents=2):
+    def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size, stop_condition,
+                elitism,  crossover, n_parents=2):
         cls.pop_size = pop_size
         cls.stop_condition = classmethod(stop_condition)
         cls.crossover = staticmethod(crossover)
@@ -61,9 +61,10 @@ class ALPSLayer(Thread):
 
 
     def distribute(self):
-        for i, individual in enumerate(self.population):
-            if self.generation - individual.birth >= self.max_age:
-                insort(self.next_layer.population, self.population.pop(i))
+        for individual in self.population:
+            #if self.generation - individual.birth >= self.max_age:
+            if individual.age >= self.max_age:
+                insort(self.next_layer.population, individual)
         if self.prev_layer is None:
             if self.generation % self.max_age == 0:
                 self.rand_pop()
@@ -89,8 +90,8 @@ class ALPSLayer(Thread):
                     mutated.mutate()
                     insort(offspring, mutated)
             return offspring
-
-        del self.population[self.pop_size:] # trim
+        
+        del self.population[self.pop_size:]   # trim               
         pool = self.population
         if self.prev_layer is not None: # and self.generation > self.min_age:
             pool += self.prev_layer.population[:] #! bloquear
@@ -103,15 +104,16 @@ class ALPSLayer(Thread):
         self.population = self.elitism(self.pop_size, offspring,
                                        self.population)
         if self.next_layer is not None:
-            self.distribute()
+            self.distribute()            
         self.ready.clear()
 
 
     def run(self):
         if self.prev_layer is None:
-            self.distribute()
-        while not self.stop_condition():
-            self.iterate()
+            self.distribute()   
+        while not self.stop_condition():     
+            self.iterate()            
+            print len(self.population)            
 
 
     # def join(self):

@@ -13,7 +13,7 @@ class Chromosome(sp.ndarray):
         cls.encoding = encoding
         cls.length = len(encoding)
 
-    def __new__(cls, birth=0, pieces=None):
+    def __new__(cls, age=0, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
             arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
@@ -22,7 +22,7 @@ class Chromosome(sp.ndarray):
                                 format(arr.length, cls.length))
         else:
             arr = sp_rand((cls.length,)).view(cls)
-        arr.birth = birth
+        arr.age = age
         arr.score = arr.fitness()
         return arr
 
@@ -42,7 +42,7 @@ class Chromosome(sp.ndarray):
 
     def __array_finalize__(self, obj):
         if obj is None: return
-        self.birth = getattr(obj, 'birth', None)
+        self.age = getattr(obj, 'age', None)
         self.score = getattr(obj, 'score', None)
 
     def fitness(self):
@@ -50,7 +50,8 @@ class Chromosome(sp.ndarray):
 
     encoding = None
     length = None
-
+    def increment_age(self):
+        self.age += 1
     def mutate(self):
         self[sp_randint(0, Chromosome.length)] = sp_rand()
         self.score = self.fitness()
