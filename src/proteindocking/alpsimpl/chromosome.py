@@ -13,7 +13,7 @@ class Chromosome(sp.ndarray):
         cls.encoding = encoding
         cls.length = len(encoding)
 
-    def __new__(cls, birth=0, pieces=None):
+    def __new__(cls, birth, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
             arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
@@ -38,7 +38,8 @@ class Chromosome(sp.ndarray):
         return True
 
     def __str__(self):
-        return "{:5f}: {}".format(self.score, super(Chromosome, self).__str__())
+        return "S{:3f}, B{}: {}".format(self.score, self.birth,
+                                        super(Chromosome, self).__str__())
 
     def __array_finalize__(self, obj):
         if obj is None: return

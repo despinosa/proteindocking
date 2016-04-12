@@ -57,17 +57,20 @@ class ALPSLayer(Thread):
     def rand_pop(self):
         self.population = []
         for _ in repeat(None, self.pop_size):
-            insort(self.population, Chromosome())
+            insort(self.population, Chromosome(self.generation))
 
 
     def distribute(self):
-        for i, individual in enumerate(self.population):
-            if self.generation - individual.birth >= self.max_age:
-                insort(self.next_layer.population, self.population.pop(i))
         if self.prev_layer is None:
-            if self.generation % self.max_age == 0:
-                self.rand_pop()
             self.__class__.generation += 1
+            if self.generation % self.max_age == 0:
+                for i, individual in enumerate(self.population):
+                    insort(self.next_layer.population, self.population.pop(i))
+                self.rand_pop()
+        else:
+            for i, individual in enumerate(self.population):
+                if self.generation - individual.birth >= self.max_age:
+                    insort(self.next_layer.population, self.population.pop(i))
 
 
     def iterate(self):
