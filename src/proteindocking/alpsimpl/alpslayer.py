@@ -66,10 +66,8 @@ class ALPSLayer(Thread):
         if self.prev_layer is None:
             self.__class__.generation += 1
             if self.generation % self.max_age == 0:
-                i = 0
-                while i < len(self.population):
-                    insort(self.next_layer.population, self.population.pop(i))
-                    i += 1
+                while len(self.population) > 0:
+                    insort(self.next_layer.population, self.population.pop())
                 self.rand_pop()
         else:
             i = 0
