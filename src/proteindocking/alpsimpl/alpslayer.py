@@ -8,7 +8,7 @@ from itertools import repeat
 from math import ceil
 from random import randint, random, sample
 from sys import maxint
-from threading import Event,  Lock, Thread
+from threading import Event, Lock, Thread
 
 
 class ALPSLayer(Thread):
@@ -73,9 +73,9 @@ class ALPSLayer(Thread):
             i = 0
             while i < len(self.population):
                 if self.generation - self.population[i].birth >= self.max_age:
-                    insort(self.next_layer.population, self.population[i])
-                    self.population.remove(i)                                   
-                i += 1
+                    insort(self.next_layer.population, self.population.pop(i))
+                else:
+                    i += 1
         del self.population[self.pop_size:] # trim
 
 
@@ -100,8 +100,9 @@ class ALPSLayer(Thread):
             return offspring
 
         pool = self.population[:]
-        if self.prev_layer is not None: # and self.generation > self.min_age:
-            pool += self.prev_layer.population[:] #! bloquear
+        if self.prev_layer is not None:
+            if self.generation > self.prev_layer.max_age:
+                pool += self.prev_layer.population[:] #! bloquear
             self.copied.set()
         offspring = reproduce(pool)
         offspring = mutate(offspring)
@@ -123,9 +124,8 @@ class ALPSLayer(Thread):
             self.rand_pop()
         while not self.stop_condition():
             self.iterate()
-            if self.next_layer is None:
-                if len(self.population)>0:                     
-                    print self.population[0]
+            if self.next_layer is None and len(self.population) > 0:
+                print self.population[-1]
         self.copied.set()
         self.redisted.set()
 
