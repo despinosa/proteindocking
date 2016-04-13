@@ -4,7 +4,7 @@
 from alpslayer import ALPSLayer
 from chromosome import Chromosome
 from definitions.crossover import single_point
-from definitions.fitness import random_fitness
+from definitions.fitness import easom_function
 from definitions.selection import plus
 
 def stop_condition(cls):
@@ -12,7 +12,7 @@ def stop_condition(cls):
 
 class ALPS(object):
     def __init__(self):
-        Chromosome.setup(random_fitness, {1:'a', 2:'b', 3:'c'})
+        Chromosome.setup(easom_function, {1:'a', 2:'b'})
         ALPSLayer.setup(50, 0.1, 0.8, 5, stop_condition, plus, single_point)
         self.layers = [ALPSLayer(2**i) for i in xrange(1, 4)]
         for i in xrange(1, len(self.layers)):
@@ -29,9 +29,9 @@ class ALPS(object):
         #     pass
         for lay in self.layers:
             lay.join()
-            print 'termina {}'.format(lay.name)
-            print 'estado {} {}\n'.format(lay.copied.is_set(),
-                                          lay.redisted.is_set())
+            # print 'termina {}'.format(lay.name)
+            # print 'estado {} {}\n'.format(lay.copied.is_set(),
+            #                               lay.redisted.is_set())
 
 if __name__ == '__main__':
     a = ALPS()

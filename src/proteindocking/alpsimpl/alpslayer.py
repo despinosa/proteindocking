@@ -73,8 +73,8 @@ class ALPSLayer(Thread):
             i = 0
             while i < len(self.population):
                 if self.generation - self.population[i].birth >= self.max_age:
-                    insort(self.next_layer.population, self.population.pop(i))
-                    i -= 1
+                    insort(self.next_layer.population, self.population[i])
+                    self.population.remove(i)                                   
                 i += 1
         del self.population[self.pop_size:] # trim
 
@@ -123,6 +123,9 @@ class ALPSLayer(Thread):
             self.rand_pop()
         while not self.stop_condition():
             self.iterate()
+            if self.next_layer is None:
+                if len(self.population)>0:                     
+                    print self.population[0]
         self.copied.set()
         self.redisted.set()
 

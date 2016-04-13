@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import scipy as sp
+import numpy as np
 
 sp_rand = sp.random.random
 sp_randint = sp.random.randint
+sp_rand_angles = np.random.uniform
 
 class Chromosome(sp.ndarray):
     @classmethod
@@ -21,7 +23,9 @@ class Chromosome(sp.ndarray):
                 raise TypeError("longitud incompatible: %d/%d".
                                 format(arr.length, cls.length))
         else:
-            arr = sp_rand((cls.length,)).view(cls)
+            #arr = sp_rand((cls.length,)).view(cls)
+            #arr = sp_randint(10,size=2).view(cls)
+            arr = sp_rand_angles(0,360,cls.length).view(cls)
         arr.birth = birth
         arr.score = arr.fitness()
         return arr
@@ -54,5 +58,6 @@ class Chromosome(sp.ndarray):
     length = None
 
     def mutate(self):
-        self[sp_randint(0, Chromosome.length)] = sp_rand()
+        #self[sp_randint(0, Chromosome.length)] = sp_rand()
+        self[sp_randint(0, Chromosome.length)] = sp_rand_angles(0,360)
         self.score = self.fitness()
