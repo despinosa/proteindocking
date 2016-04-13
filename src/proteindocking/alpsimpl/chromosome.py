@@ -38,8 +38,9 @@ class Chromosome(sp.ndarray):
         return True
 
     def __str__(self):
-        return "S{:3f}, B{}: {}".format(self.score, self.birth,
-                                        super(Chromosome, self).__str__())
+        return "score={:3f}, birth={}, {}".format(self.score, self.birth,
+                                                  super(Chromosome, self).
+                                                  __str__())
 
     def __array_finalize__(self, obj):
         if obj is None: return

@@ -20,10 +20,10 @@ class ALPSLayer(Thread):
         self.prev_layer = prev_layer
         self.next_layer = next_layer
         self.population = []
-        self.copied = Event()
-        self.copied.clear()
-        self.redisted = Event()
-        self.redisted.clear()
+        self.edit_ok = Event()
+        self.edit_ok.clear()
+        self.redist_ok = Event()
+        self.redist_ok.clear()
 
     @classmethod
     def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size,
@@ -104,20 +104,20 @@ class ALPSLayer(Thread):
         pool = self.population[:]
         if self.prev_layer is not None: # and self.generation > self.min_age:
             pool += self.prev_layer.population[:] #! bloquear
-            self.copied.set()
+            self.prev_layer.edit_ok.set()
         offspring = reproduce(pool)
         offspring = mutate(offspring)
         if self.next_layer is not None:
-            self.next_layer.copied.wait()
-            self.next_layer.copied.clear()
+            self.edit_ok.wait()
+            self.edit_ok.clear()
         self.population = self.elitism(self.pop_size, offspring,
                                        self.population)
         if self.prev_layer is not None:
-            self.prev_layer.redisted.wait()
-            self.prev_layer.redisted.clear()
+            self.redist_ok.wait()
+            self.redist_ok.clear()
         if self.next_layer is not None:
             self.redistribute()
-            self.redisted.set()
+            self.next_layer.redist_ok.set()
 
 
     def run(self):
@@ -125,6 +125,8 @@ class ALPSLayer(Thread):
             self.rand_pop()
         while not self.stop_condition():
             self.iterate()
-        self.copied.set()
-        self.redisted.set()
+        if self.prev_layer is not None:
+            self.prev_layer.edit_ok.set()
+        if self.next_layer is not None:
+            self.next_layer.redist_ok.set()
 
