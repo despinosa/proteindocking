@@ -58,6 +58,6 @@ class Chromosome(sp.ndarray):
     length = None
 
     def mutate(self):
-        #self[sp_randint(0, Chromosome.length)] = sp_rand()
-        self[sp_randint(0, Chromosome.length)] = sp_rand_angles(0,360)
+        self[sp_randint(0, Chromosome.length)] = sp_rand()
+        # self[sp_randint(0, Chromosome.length)] = sp_rand_angles(0,360)
         self.score = self.fitness()

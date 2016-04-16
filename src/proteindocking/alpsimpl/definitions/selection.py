@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-def plus(pop_size, new_pop, old_pop=None):
+def plus(pop_size, new_pop, old_pop=[], *args):
     """"Elitismo para lamdba más mu
 
     Devuelve los mejores elementos de la unión de las poblaciones dadas
-    en tiempo O(lambda + mu).
+    en tiempo O((lambda+mu)*log(lambda+mu)).
 
     pop_size ~ tamaño de la población seleccionada
     new_pop ~ población de tamaño lambda de individuos recién generados
@@ -17,7 +17,7 @@ def plus(pop_size, new_pop, old_pop=None):
     return population
 
 
-def comma(pop_size, new_pop, old_pop=None):
+def comma(pop_size, new_pop, *args):
     """Elitismo para lamdba coma mu
 
     Devuelve los mejores elementos de la población nueva en tiempo
@@ -29,3 +29,13 @@ def comma(pop_size, new_pop, old_pop=None):
     """
     del new_pop[pop_size:]
     return new_pop
+
+
+def enhanced(pop_size, new_pop, old_pop=[], elit_rate=0.2):
+    preserve = int(pop_size * elit_rate)
+    del old_pop[preserve:]
+    create = pop_size - len(old_pop)
+    del new_pop[create:]
+    population = new_pop + old_pop
+    population.sort()
+    return population

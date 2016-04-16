@@ -5,7 +5,6 @@ from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
-from math import ceil
 from random import randint, random, sample
 from sys import maxint
 from threading import Event, Lock, Thread
@@ -22,8 +21,8 @@ class ALPSLayer(Thread):
         self.population = []
         self.copied = Event()
         self.copied.clear()
-        self.redisted = Event()
-        self.redisted.clear()
+        self.replaced = Event()
+        self.replaced.clear()
 
     @classmethod
     def setup(cls, pop_size, mutate_rate, mating_rate, tourn_size,
@@ -33,8 +32,8 @@ class ALPSLayer(Thread):
         cls.crossover = staticmethod(crossover)
         cls.elitism = staticmethod(elitism)
         cls.tourn_size = tourn_size
-        cls.mutate_cycles = int(ceil(mutate_rate * pop_size))
-        cls.reprod_cycles = int(ceil(mating_rate * pop_size / 2))
+        cls.mutate_cycles = int(mutate_rate * pop_size)
+        cls.reprod_cycles = int(mating_rate * pop_size / 2)
         cls.n_parents = n_parents
         cls.generation = 0
         cls.count = 0
@@ -76,7 +75,7 @@ class ALPSLayer(Thread):
                     insort(self.next_layer.population, self.population.pop(i))
                 else:
                     i += 1
-        del self.population[self.pop_size:] # trim
+            del self.population[self.pop_size:] # trim
 
 
     def iterate(self):
@@ -103,20 +102,20 @@ class ALPSLayer(Thread):
         if self.prev_layer is not None:
             if self.generation > self.prev_layer.max_age:
                 pool += self.prev_layer.population[:] #! bloquear
-            self.copied.set()
+        self.copied.set()
         offspring = reproduce(pool)
         offspring = mutate(offspring)
         if self.next_layer is not None:
             self.next_layer.copied.wait()
             self.next_layer.copied.clear()
+        if self.prev_layer is not None:
+            self.prev_layer.replaced.wait()
+            self.prev_layer.replaced.clear()
         self.population = self.elitism(self.pop_size, offspring,
                                        self.population)
-        if self.prev_layer is not None:
-            self.prev_layer.redisted.wait()
-            self.prev_layer.redisted.clear()
         if self.next_layer is not None:
             self.redistribute()
-            self.redisted.set()
+        self.replaced.set()
 
 
     def run(self):
@@ -124,8 +123,6 @@ class ALPSLayer(Thread):
             self.rand_pop()
         while not self.stop_condition():
             self.iterate()
-            if self.next_layer is None and len(self.population) > 0:
-                print self.population[-1]
         self.copied.set()
-        self.redisted.set()
+        self.replaced.set()
 

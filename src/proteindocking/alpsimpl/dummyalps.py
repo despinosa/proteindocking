@@ -5,7 +5,7 @@ from alpslayer import ALPSLayer
 from chromosome import Chromosome
 from definitions.crossover import single_point
 from definitions.fitness import rastrigin
-from definitions.selection import plus
+from definitions.selection import enhanced
 
 GEN_LIMIT = 500
 
@@ -15,7 +15,7 @@ def stop_condition(cls):
 class ALPS(object):
     def __init__(self):
         Chromosome.setup(rastrigin, {1:'a', 2:'b', 3:'b', 4:'d', 5:'e'})
-        ALPSLayer.setup(50, 0.1, 0.8, 5, stop_condition, plus, single_point)
+        ALPSLayer.setup(50, 0.1, 0.8, 5, stop_condition, enhanced, single_point)
         self.layers = [ALPSLayer(10*i) for i in xrange(1, 11)]
         for i in xrange(1, len(self.layers)):
             self.layers[i].prev_layer = self.layers[i-1]
