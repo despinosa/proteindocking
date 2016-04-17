@@ -1,0 +1,31 @@
+---
+- prerequisito: compilador de C++
+  OS X: instalar _XCode_ o `brew install gcc`
+  Windows: instalar Visual Studio (cualquiera excepto Express)
+
+- prerequisito: compilador de Fortran
+  OS X: `brew install gcc`
+
+- prerequisito: plataforma Python 2.7
+  OS X: incluída en el SO o instalar ![_conda_](https://conda.anaconda.org/)
+  Windows: instalar ![_conda_](https://conda.anaconda.org/)
+
+- prerequisito: librería _scipy_ (python)
+  OS X: `pip install scipy` o incluída en _conda_
+
+- prerequisito: librería _biopython_ (python)
+  OS X: `pip install biopython` o `conda install biopython`
+  Windows: `conda install biopython`
+
+- prerequisito: programa _DSSP_
+  OS X:
+    - prerequisito: librería _boost_ (C++)
+      ?: `brew install boost`
+    - obtener ![fuente](ftp://ftp.cmbi.ru.nl/pub/software/dssp/)
+    - editar `make.config` como sea apropiado
+    - instalar con `make install`
+    - renombrar (o hacer alias de) ejecutable `mkdssp` a `dssp`
+  Windows:
+    - obtener ![ejecutable](ftp://ftp.cmbi.ru.nl/pub/software/dssp/)
+    - agregar ejecutable al `PATH` del sistema
+...
