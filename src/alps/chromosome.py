@@ -6,26 +6,20 @@ import scipy as sp
 
 sp_rand = sp.random.random
 sp_randint = sp.random.randint
-sp_rand_angles = sp.random.uniform
 
 class Chromosome(sp.ndarray):
-    @classmethod
-    def setup(cls, fitness, encoding):
-        cls.fitness = fitness
-        cls.encoding = encoding
-        cls.length = len(encoding)
-
-    def __new__(cls, birth, pieces=None):
+    def __new__(cls, main, birth, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
             arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
-            if arr.length != cls.length:
+            if arr.size != main.lower.size:
                 raise TypeError("longitud incompatible: %d/%d".
-                                format(arr.length, cls.length))
+                                format(arr.size, main.lower.size))
         else:
-            arr = sp_rand((cls.length,)).view(cls)
-            #arr = sp_randint(10,size=2).view(cls)
-            #arr = sp_rand_angles(0,360,cls.length).view(cls)
+            arr = sp_rand((main.lower.size,)).view(cls)
+            arr *= main.upper
+            arr += main.lower
+        arr.main = main
         arr.birth = birth
         arr.score = arr.fitness()
         return arr
@@ -52,12 +46,9 @@ class Chromosome(sp.ndarray):
         self.score = getattr(obj, 'score', None)
 
     def fitness(self):
-        raise NotImplementedError
-
-    encoding = None
-    length = None
+        return self.main.fitness(self)
 
     def mutate(self):
-        self[sp_randint(0, Chromosome.length)] = sp_rand()
-        # self[sp_randint(0, Chromosome.length)] = sp_rand_angles(0,360)
+        idx = sp_randint(0, self.size)
+        self[idx] = sp_rand()*self.main.upper[idx] + self.main.lower[idx]
         self.score = self.fitness()

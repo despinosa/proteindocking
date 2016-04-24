@@ -1,1 +1,1 @@
-__all__ = ['dockingalg']
+__all__ = ['dockingproblem', 'dockedpair']
