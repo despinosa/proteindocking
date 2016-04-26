@@ -10,7 +10,7 @@ class ALPS(object):
 
     def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
               stop_condition, elitism, crossover, n_parents=2,
-                 max_generations=10, aging_scheme=fibonacci, n_layers=10):
+              max_generations=10, aging_scheme=fibonacci, n_layers=10):
         self.pop_size = pop_size
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
         self.crossover = lambda *a, **kw: crossover(self, *a, **kw)

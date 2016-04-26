@@ -6,7 +6,7 @@ from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
 from random import random
 import scipy as sp
-import math
+from math import exp, sin, cos, pi
 
 limiteA=-20
 limiteB=20
@@ -18,22 +18,22 @@ def decode(array):
 
 def f(array):
     x,y = decode(array)
-    return -20*math.exp(-0.2*math.sqrt(0.5*(x*x+y*y)))-math.exp(0.5*math.cos(2*math.pi*x)+math.cos(2*math.pi*y)) + math.e + 20
+    return -20*exp(-0.2*sqrt(0.5*(x*x+y*y)))-exp(0.5*cos(2*pi*x)+cos(2*pi*y)) + e + 20
 
 def levi(array):
     x,y = decode(array)
-    return ((math.sin(3*math.pi*x))**2) + ((x-1)**2) * (1+ (math.sin(3*math.pi*y))**2) + ((y-1)**2) * (1+ (math.sin(2*math.pi*y))**2)
+    return ((sin(3*pi*x))**2) + ((x-1)**2) * (1+ (sin(3*pi*y))**2) + ((y-1)**2) * (1+ (sin(2*pi*y))**2)
 
 def easom(array):
     x = array[0]
     y = array[1]
-    return (-1)*math.cos(x)*math.cos(y)*math.exp(-(((x-math.pi)**2) + ((y-math.pi)**2)))
+    return (-1)*cos(x)*cos(y)*exp(-(((x-pi)**2) + ((y-pi)**2)))
 
 def rastrigin(array):
     A = 10
     val = A * array.size
     for x in array:
-        val += x**2 - A*math.cos(2*math.pi*x)
+        val += x**2 - A*cos(2*pi*x)
     return val
 
 def random_fitness(array):
@@ -47,11 +47,6 @@ class ALPSTest(ALPS):
         self.lower = sp.full(n, -5.12)
         self.upper = sp.full(n, 5.12)
         self.setup(50, 0.1, 0.8, 5, gen_limit, enhanced, single_point)
-        self.layers = [ALPSLayer(self, i, 10*i) for i in xrange(1, 11)]
-        for i in xrange(1, len(self.layers)):
-            self.layers[i].prev_layer = self.layers[i-1]
-        for i in xrange(len(self.layers)-1):
-            self.layers[i].next_layer = self.layers[i+1]
 
     def run(self):
         for lay in self.layers:

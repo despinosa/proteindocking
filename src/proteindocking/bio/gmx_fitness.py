@@ -1,6 +1,7 @@
 import subprocess
 import shutil
 import os
+import shlex
 import sys
 
 class gmxfitness():
@@ -25,21 +26,22 @@ class gmxfitness():
 			n -= 1
 		return cad
 	
-	def ioFile(self):
+	def ioFile(self): # va en carga de moleculas
+		# agregar hidrogenos
 		with open('topol_with_ligand.top','r') as in_file:
 			buf = in_file.readlines()
 		with open('topol_with_ligand.top','w') as out_file:	
 			allowed = 0		
 			newfile = ''
-			for line in buf:			
+			for i,line in enumerate(buf):			
 				if '#include "charmm27.ff/forcefield.itp"' in line:
 					line += '#include "'+self.ligand_name+'.itp"\n'				
 				if '[ molecules ]' in line:
 					allowed = 1
-				if 'Protein_chain_A' in line and allowed :
+				if 'Protein' in line and allowed and (buf[i+1] != None ):
 					pos = line.find('1')
 					if pos == -1:
-						print 'Error'
+						raise ValueError
 						break
 					line += (self.ligand_name+self.nspaces(pos-len(self.ligand_name)))+'1'		
 				newfile += line
@@ -62,7 +64,7 @@ class gmxfitness():
 		os.chdir(self.tmpfolder)  		
 
 		try:
-			p = subprocess.Popen(self.cmd, universal_newlines=True,
+			p = subprocess.Popen(shlex.split(self.cmd), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out,err = p.communicate()
 
@@ -72,14 +74,14 @@ class gmxfitness():
 			shutil.copyfile('topol.top','topol_with_ligand.top')
 			self.ioFile()			
 
-			p = subprocess.Popen(self.cmdgrompp, universal_newlines=True,
+			p = subprocess.Popen(shlex.split(self.cmdgrompp), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out,err = p.communicate()
 
 			if p.returncode:
 				raise Exception(p.returncode)
 
-			p = subprocess.Popen(self.cmdrun, universal_newlines=True,
+			p = subprocess.Popen(shlex.split(self.cmdrun), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out,err = p.communicate()
 
@@ -102,13 +104,13 @@ class gmxfitness():
 
 			if p.returncode:
 				raise Exception(p.returncode)				
-		except:
+		except IndexError:
 			e = sys.exc_info()[1]
-			print err
+			# print err
 			print "Error: %s" % e
 
 		return energy
 
 #Ejemplo
-# aux = gmxfitness('HiloPrueba','1ubq.pdb','zinc_11909586','conf_with_ligand10x10x10.pdb','em.mdp','charmm27')
-# print aux.calculate_fitness()
+aux = gmxfitness('HiloPrueba','1ubq.pdb','zinc_11909586','conf_with_ligand10x10x10.pdb','em.mdp','charmm27')
+print aux.calculate_fitness()

@@ -24,7 +24,7 @@ class DockedPair(object):
     def __init__(self, main, arr):
         super(DockedPair, self).__init__()
         self.structure = main.original.copy()
-        self.ligand = self.structure[0]['L']
+        self.ligand = self.structure[0]['S']
         self.protein = self.structure[0]['P']
         self.cavities = self.structure[1]['C']
         self.decode(arr)

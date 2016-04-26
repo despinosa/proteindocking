@@ -17,7 +17,7 @@ class Chromosome(sp.ndarray):
                                 format(arr.size, main.lower.size))
         else:
             arr = sp_rand((main.lower.size,)).view(cls)
-            arr *= main.upper
+            arr *= main.upper - main.lower
             arr += main.lower
         arr.main = main
         arr.birth = birth
@@ -45,10 +45,10 @@ class Chromosome(sp.ndarray):
         self.birth = getattr(obj, 'birth', None)
         self.score = getattr(obj, 'score', None)
 
-    def fitness(self):
-        return self.main.fitness(self)
+    fitness = lambda self: self.main.fitness(self)
 
     def mutate(self):
         idx = sp_randint(0, self.size)
-        self[idx] = sp_rand()*self.main.upper[idx] + self.main.lower[idx]
+        self[idx] = self.main.lower[idx] + sp_rand() * (self.main.upper[idx]-
+                                                        self.main.lower[idx])
         self.score = self.fitness()

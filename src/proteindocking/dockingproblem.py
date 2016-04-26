@@ -30,7 +30,7 @@ class DockingProblem(Thread):
                 raise ValueError(('el ligando ({}) no puede tener '
                                   'más de una cadena').format(ligand_path))
             ligand_chain = ligand_model.child_list[0]
-            ligand_chain.id = 'L'
+            ligand_chain.id = 'S'
             return ligand_chain
 
         def load_protein(parser):
@@ -69,8 +69,8 @@ class DockingProblem(Thread):
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
         self.original.add(Model(0))
-        self.original[0].add(load_ligand(parser))
         self.original[0].add(load_protein(parser))
+        self.original[0].add(load_ligand(parser))
         self.original.add(Model(1))
         cavities = load_cavities(parser)
         self.original[1].add(cavities)
