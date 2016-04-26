@@ -76,9 +76,9 @@ class DockingProblem(Thread):
         self.original[1].add(cavities)
         self.lower, self.upper = encode(len(cavities))
 
-    def fitness(self, arr):
+    def fitness(self, arr, path):
         pair = DockedPair(self, arr)
-        return pair.free_energy()
+        return pair.free_energy(path)
 
     @abstractmethod
     def estimate_progress(self):

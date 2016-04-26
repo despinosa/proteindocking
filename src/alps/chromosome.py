@@ -8,22 +8,26 @@ sp_rand = sp.random.random
 sp_randint = sp.random.randint
 
 class Chromosome(sp.ndarray):
-    def __new__(cls, main, birth, pieces=None):
+    def __new__(cls, layer, birth, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
             arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
-            if arr.size != main.lower.size:
+            if arr.size != layer.main.lower.size:
                 raise TypeError("longitud incompatible: %d/%d".
-                                format(arr.size, main.lower.size))
+                                format(arr.size, layer.main.lower.size))
         else:
-            arr = sp_rand((main.lower.size,)).view(cls)
-            arr *= main.upper - main.lower
-            arr += main.lower
-        arr.main = main
+            arr = sp_rand((layer.main.lower.size,)).view(cls)
+            arr *= layer.main.upper - layer.main.lower
+            arr += layer.main.lower
+        arr.layer = layer
         arr.birth = birth
+        arr.flags.writeable = False
+        self.hash = hash(arr.data)
         arr.score = arr.fitness()
         return arr
 
+    def __eq__(self, other):
+        return self.hash == other.hash
     def __lt__(self, other):
         return self.score < other.score
     def __le__(self, other):
@@ -44,11 +48,12 @@ class Chromosome(sp.ndarray):
         if obj is None: return
         self.birth = getattr(obj, 'birth', None)
         self.score = getattr(obj, 'score', None)
+        self.hash = getattr(obj, 'hash', None)
 
-    fitness = lambda self: self.main.fitness(self)
+    fitness = lambda self: self.layer.main.fitness(self, self.layer.name)
 
     def mutate(self):
         idx = sp_randint(0, self.size)
-        self[idx] = self.main.lower[idx] + sp_rand() * (self.main.upper[idx]-
-                                                        self.main.lower[idx])
+        self[idx] = self.layer.main.lower[idx] + sp_rand() * (self.layer.main.upper[idx]-
+                                                        self.layer.main.lower[idx])
         self.score = self.fitness()

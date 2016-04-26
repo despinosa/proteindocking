@@ -36,14 +36,11 @@ class DockedPair(object):
         rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
         origin = self.cavities[int(round(arr[0]))]['R']
         self.ligand.transform(rotation, origin.coord)
-        arr.flags.writeable = False
-        self.hash = hash(arr.data)
-        arr.flags.writeable = True
 
-    def free_energy(self):
+    def free_energy(self, layer_name):
         out = PDBOut()
         out.set_structure(self.structure)
-        out.save('tmp/{}.pdb'.format(self.hash), self.model0select)
+        out.save('tmp/{}/dockedpair.pdb'.format(layer_name), self.model0select)
         # pipes locos de gmx
         # parsear out de gmx y retorna energia (float)
         # borrar .pdb
