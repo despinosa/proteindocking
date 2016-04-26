@@ -1,25 +1,22 @@
 ;
 ;	File 'topol.top' was generated
-;	By user: supernaut (501)
-;	On host: supernaut.local
-;	At date: Mon Apr 25 16:39:26 2016
-
+;	By user: Jesus (197609)
+;	On host: FERNANDEZ-PC
+;	At date: Tue Apr 26 14:26:26 2016
 ;
 ;	This is a standalone topology file
 ;
 ;	Created by:
-;	                 :-) GROMACS - gmx pdb2gmx, VERSION 5.1.1 (-:
-;	
-;	Executable:   /usr/local/gromacs/bin/gmx
-;	Data prefix:  /usr/local/gromacs
+;	GROMACS:      gmx pdb2gmx, VERSION 5.0.7
+;	Executable:   /cygdrive/c/Users/Jesus/Documents/ESCOM/TT/gromacs-5.0.7/build/bin/gmx.exe
+;	Library dir:  /cygdrive/c/Users/Jesus/Documents/ESCOM/TT/gromacs-5.0.7/share/top
 ;	Command line:
-;	  gmx pdb2gmx -ignh -f 1ubq.pdb -ff charmm27 -water none
-;	Force field was read from the standard GROMACS share directory.
+;	  gmx pdb2gmx -ignh -f ../tmp/1ubq.pdb -ff charmm27 -water none
+;	Force field was read from the standard Gromacs share directory.
 ;
 
 ; Include forcefield parameters
 #include "charmm27.ff/forcefield.itp"
-#include "zinc_11909586.itp"
 
 [ moleculetype ]
 ; Name            nrexcl
@@ -11694,4 +11691,3 @@ UBIQUITIN t=   0.00000
 [ molecules ]
 ; Compound        #mols
 Protein             1
-zinc_11909586       1
