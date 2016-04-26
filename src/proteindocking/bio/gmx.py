@@ -12,8 +12,7 @@ class gmx():
 	protein_ligand_box_file = 'conf_with_ligand10x10x10.pdb'
 	em_file = 'em.mdp'		
 	files_route = '../tmp/'
-	docked_files_route = '../../tmp/'
-	docked_pair = 'dockedpair.pdb'
+	docked_files_route = '../../tmp/'	
 
 	protein_topology = "gmx pdb2gmx -ignh -f "+ files_route + protein_file + " -ff " + forcefield + " -water none"
 
@@ -49,8 +48,8 @@ class gmx():
 			e = sys.exc_info()[1]				
 			print "Error: %s" % e
 	@staticmethod
-	def protein_ligand_box(thread_name):
-		cmd_protein_ligand_box = "gmx insert-molecules -f conf.gro -ci "+gmx.docked_files_route+thread_name+gmx.docked_pair+" -o conf_with_ligand10x10x10.pdb -box 10 10 10 -nmol 1"
+	def protein_ligand_box(thread_name,docked_pair):
+		cmd_protein_ligand_box = "gmx insert-molecules -f conf.gro -ci "+gmx.docked_files_route+thread_name+docked_pair+" -o conf_with_ligand10x10x10.pdb -box 10 10 10 -nmol 1"
 		try:
 			p = subprocess.Popen(shlex.split(cmd_protein_ligand_box), universal_newlines=True,
 				                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
