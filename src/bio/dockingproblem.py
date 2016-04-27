@@ -9,7 +9,7 @@ from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from collections import namedtuple
 from dockedpair import DockedPair
-# from gmx import add_hydrogens, generate_protein_topology, process_topology
+from gmx import gmx
 from math import pi
 from threading import Thread
 import scipy as sp
@@ -67,9 +67,9 @@ class DockingProblem(Thread):
             upper = sp.array((n_cavities-eps-0.5, 2*pi, 2*pi))
             return lower, upper
 
-        # add_hydrogens()
-        # generate_protein_topology(protein_path)
-        # process_topology()
+        gmx.add_hydrogens()
+        gmx.generate_protein_topology()
+        gmx.process_topology()
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
         self.original.add(Model(0))

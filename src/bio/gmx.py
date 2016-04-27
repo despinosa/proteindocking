@@ -8,9 +8,9 @@ from tempfile import gettempdir
 class gmx():
 
 	TEMPDIR = gettempdir()
-	ROOT = '\\proteindocking'
-	FILES = '\\files\\'
-	TMP = '\\tmp\\'
+	ROOT = 'proteindocking'
+	FILES = 'files'
+	TMP = 'tmp'
 	GMX_FILES = 'gmx_files'
 
 	w = '10'
@@ -59,23 +59,29 @@ class gmx():
 			out_file.write(newfile)		
 
 	@staticmethod
-	def process_topology():		
+	def process_topology():
 		shutil.copyfile('topol.top',gmx.topol_with_ligand_file)
 		gmx.ioFile()
 
 	@staticmethod
-	def generate_protein_topology():		
-		os.chdir(gmx.TEMPDIR + gmx.ROOT + gmx.FILES)
+	def generate_protein_topology():
+		my_path = os.path.join(gmx.TEMPDIR, gmx.ROOT)
+		if not os.path.exists(my_path):
+			os.mkdir(my_path)
+		my_path = os.path.join(my_path, gmx.FILES)
+		if not os.path.exists(my_path):
+			os.mkdir(my_path)
+		os.chdir(my_path)
 		cmd_protein_topology = "gmx pdb2gmx -ignh -f {} -ff {} -water none".format(gmx.protein_file,gmx.forcefield)
 		try:
 			p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
 				                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out,err = p.communicate()
 		except Exception:
-			e = sys.exc_info()[1]				
+			e = sys.exc_info()[1]
 			print "Error: %s" % e
 	@staticmethod
-	def protein_ligand_box(thread_name,docked_pair):
+	def protein_ligand_box(): # thread_name, docked_pair): # no los usas
 		########################################################################################################poner dockedpair
 		cmd_protein_ligand_box = "gmx insert-molecules -f conf.gro -ci {}.pdb -o {} -box {} {} {} -nmol 1".format(gmx.ligand_name,gmx.protein_ligand_box_file,gmx.w,gmx.h,gmx.l)		
 		try:
@@ -105,7 +111,7 @@ class gmx():
 
 	@staticmethod
 	def process_folders(thread_name):			
-		os.chdir(gmx.TEMPDIR + gmx.ROOT + gmx.TMP)		
+		os.chdir(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP))
 
 		if not os.path.exists(thread_name):			
 			os.mkdir(thread_name)
@@ -117,33 +123,33 @@ class gmx():
 
 		os.mkdir(gmx.GMX_FILES)
 	
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.protein_file,gmx.GMX_FILES)
-		#shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.protein_hidro_file,gmx.GMX_FILES)
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.ligand_name+'.itp',gmx.GMX_FILES)
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.ligand_name+'.pdb',gmx.GMX_FILES)
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.em_file,gmx.GMX_FILES)		
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + gmx.topol_with_ligand_file,gmx.GMX_FILES)				
-		shutil.copy(gmx.TEMPDIR + gmx.ROOT + gmx.FILES + 'conf.gro',gmx.GMX_FILES)				
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, gmx.protein_file), gmx.GMX_FILES)
+		#shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, gmx.protein_hidro_file), gmx.GMX_FILES)
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, '{}.itp'.format(gmx.ligand_name)), gmx.GMX_FILES)
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, '{}.pdb'.format(gmx.ligand_name)), gmx.GMX_FILES)
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, gmx.em_file), gmx.GMX_FILES)
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, gmx.topol_with_ligand_file), gmx.GMX_FILES)				
+		shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES, 'conf.gro'), gmx.GMX_FILES)				
 
 
 		os.chdir(gmx.GMX_FILES)
 
 	@staticmethod
-	def calculate_fitness():				
+	def calculate_fitness():
 		energy = ''				
 		cmd_fitness = ["gmx grompp -v -f {} -c {} -o em.tpr -p {}".format(gmx.em_file,gmx.protein_ligand_box_file,gmx.topol_with_ligand_file),
-		   		   "gmx mdrun -v -s em.tpr"]			   		   				
+		   		   "gmx mdrun -v -s em.tpr"]
 		try:
 			n = len(cmd_fitness)
 			i = 0
-			while(i<n):								
+			while(i<n):
 				p = subprocess.Popen(shlex.split(cmd_fitness[i]), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-				out,err = p.communicate()				
-				i += 1	
+				out,err = p.communicate()
+				i += 1
 
 				if p.returncode:
-					raise Exception(p.returncode)							
+					raise Exception(p.returncode)
 			#obtiene la energia			
 			pos = err.find('Epot=')
 			if pos != -1:
@@ -159,15 +165,15 @@ class gmx():
 			e = sys.exc_info()[1]				
 			print "Error: %s" % e
 			print err
+		return float(energy)
 
-		return energy
-
-#script_route = os.getcwd()
-gmx.generate_protein_topology()
-###############################gmx.add_hydrogens()  --opcional
-gmx.process_topology()
-gmx.process_folders('Hilo0')
-gmx.protein_ligand_box('Hilo0','../dockedpair')
-print gmx.calculate_fitness()
+if __name__ == '__main__':
+	#script_route = os.getcwd()
+	gmx.generate_protein_topology()
+	###############################gmx.add_hydrogens()  --opcional
+	gmx.process_topology()
+	gmx.process_folders('Hilo0')
+	gmx.protein_ligand_box('Hilo0','../dockedpair')
+	print gmx.calculate_fitness()
 
 

@@ -1,2 +1,2 @@
-def gen_limit(alps):
-    return alps.generation >= alps.max_generations
+def gen_limit(layer):
+    return layer.main.generation >= layer.main.max_generations

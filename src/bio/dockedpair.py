@@ -9,7 +9,7 @@ from Bio.PDB.Structure import Structure
 from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
 from math import pi
-from os import path, remove
+from os import mkdir, path, remove
 import scipy as sp
 
 
@@ -41,12 +41,14 @@ class DockedPair(object):
     def free_energy(self, layer):
         out = PDBOut()
         out.set_structure(self.structure)
-        path_ = 'tmp/{}/dockedpair.pdb'.format(layer.name)
-        if path.exists(path_):
-            out.save(path_, self.model0select)
-        # pipes locos de gmx
-        # parsear out de gmx y retorna energia (float)
-        # borrar .pdb
-        from random import random
-        return random()
+        my_path = path.join(gettempdir(), 'tmp', layer.name)
+        if not path.exists(my_path):
+            mkdir(my_path)
+        my_path = path.join(my_path, 'dockedpair.pdb')
+        if path.exists(my_path):
+            remove(my_path)
+        out.save(my_path, self.model0select)
+        gmx.process_folders(layer.name)
+        gmx.protein_ligand_box()
+        return gmx.calculate_fitness()
 

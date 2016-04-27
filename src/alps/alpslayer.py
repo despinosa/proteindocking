@@ -17,6 +17,8 @@ class ALPSLayer(Thread):
         self.name = "{}{}".format(self.__class__.__name__, i)
         self.max_age = max_age
         self.crossover = lambda *a, **kw: crossover(self, *a, **kw)
+        self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
+        self.elitism = lambda *a, **kw: elitism(self, *a, **kw)
         self.prev_layer = prev_layer
         self.next_layer = next_layer
         self.population = []

@@ -12,8 +12,6 @@ class ALPS(object):
               stop_condition, elitism, crossover, n_parents=2,
               max_generations=10, aging_scheme=fibonacci, n_layers=10):
         self.pop_size = pop_size
-        self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
-        self.elitism = lambda *a, **kw: elitism(self, *a, **kw)
         self.tourn_size = tourn_size
         self.mutate_cycles = int(mutate_rate * pop_size)
         self.preserve = int((1 - mating_rate) * pop_size)
@@ -22,7 +20,8 @@ class ALPS(object):
         self.max_generations = max_generations
         self.generation = 0
         age_limits = aging_scheme()
-        self.layers = [ALPSLayer(self, i, age_limits.next(), crossover)
+        self.layers = [ALPSLayer(self, i, age_limits.next(), stop_condition,
+                                 elitism, crossover)
                        for i in xrange(n_layers)]
         for i in xrange(1, len(self.layers)):
             self.layers[i].prev_layer = self.layers[i-1]

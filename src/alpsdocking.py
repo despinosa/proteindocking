@@ -4,6 +4,7 @@
 from alps.alps import ALPS
 from bio.dockingproblem import DockingProblem
 from os import mkdir, path
+from tempfile import gettempdir
 
 class ALPSDocking(DockingProblem, ALPS):
     def __init__(self, ligand_path, protein_path, cavities_path, # docking
@@ -14,7 +15,7 @@ class ALPSDocking(DockingProblem, ALPS):
                    stop_condition, elitism, crossover)
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path)
         for layer in self.layers:
-            new_folder = 'tmp/{}'.format(layer.name)
+            new_folder = path.join(gettempdir(), 'tmp', layer.name)
             if not path.exists(new_folder):
                 mkdir(new_folder)
 
