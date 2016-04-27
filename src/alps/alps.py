@@ -13,7 +13,6 @@ class ALPS(object):
               max_generations=10, aging_scheme=fibonacci, n_layers=10):
         self.pop_size = pop_size
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
-        self.crossover = lambda *a, **kw: crossover(self, *a, **kw)
         self.elitism = lambda *a, **kw: elitism(self, *a, **kw)
         self.tourn_size = tourn_size
         self.mutate_cycles = int(mutate_rate * pop_size)
@@ -23,7 +22,7 @@ class ALPS(object):
         self.max_generations = max_generations
         self.generation = 0
         age_limits = aging_scheme()
-        self.layers = [ALPSLayer(self, i, age_limits.next())
+        self.layers = [ALPSLayer(self, i, age_limits.next(), crossover)
                        for i in xrange(n_layers)]
         for i in xrange(1, len(self.layers)):
             self.layers[i].prev_layer = self.layers[i-1]
@@ -31,7 +30,7 @@ class ALPS(object):
             self.layers[i].next_layer = self.layers[i+1]
 
     @abstractmethod
-    def fitness(self, arr):
+    def fitness(self, arr, layer):
         pass
 
     def start_layers(self):

@@ -6,7 +6,7 @@ from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
 from random import random
 import scipy as sp
-from math import exp, sin, cos, pi
+from math import e, exp, sin, cos, pi
 
 limiteA=-20
 limiteB=20
@@ -54,7 +54,7 @@ class ALPSTest(ALPS):
         for lay in self.layers:
             lay.join()
 
-    def fitness(self, arr):
+    def fitness(self, arr, layer):
         return rastrigin(arr)
 
 if __name__ == '__main__':

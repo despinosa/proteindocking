@@ -11,11 +11,12 @@ from threading import Event, Lock, Thread
 
 
 class ALPSLayer(Thread):
-    def __init__(self, main, i, max_age, prev_layer=None, next_layer=None):
+    def __init__(self, main, i, max_age, crossover, prev_layer=None, next_layer=None):
         super(ALPSLayer, self).__init__()
         self.main = main
         self.name = "{}{}".format(self.__class__.__name__, i)
         self.max_age = max_age
+        self.crossover = lambda *a, **kw: crossover(self, *a, **kw)
         self.prev_layer = prev_layer
         self.next_layer = next_layer
         self.population = []
@@ -27,7 +28,7 @@ class ALPSLayer(Thread):
     def rand_pop(self):
         del self.population[:]
         for _ in repeat(None, self.main.pop_size):
-            insort(self.population, Chromosome(self.main, self.main.generation))
+            insort(self.population, Chromosome(self, self.main.generation))
     
 
     def redistribute(self):
@@ -55,7 +56,7 @@ class ALPSLayer(Thread):
                 for _ in repeat(None, self.main.reprod_cycles):
                     tournament = sample(pool, self.main.tourn_size)
                     parents = nsmallest(self.main.n_parents, tournament)
-                    for child in self.main.crossover(*parents):
+                    for child in self.crossover(*parents):
                         insort(offspring, child) # n
             return offspring
 

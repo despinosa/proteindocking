@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from alps.alps import ALPS
-from proteindocking.dockingproblem import DockingProblem
+from bio.dockingproblem import DockingProblem
+from os import mkdir, path
 
 class ALPSDocking(DockingProblem, ALPS):
     def __init__(self, ligand_path, protein_path, cavities_path, # docking
@@ -12,6 +13,10 @@ class ALPSDocking(DockingProblem, ALPS):
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
                    stop_condition, elitism, crossover)
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path)
+        for layer in self.layers:
+            new_folder = 'tmp/{}'.format(layer.name)
+            if not path.exists(new_folder):
+                mkdir(new_folder)
 
 
     def estimate_progress(self):

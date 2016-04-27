@@ -21,13 +21,9 @@ class Chromosome(sp.ndarray):
             arr += layer.main.lower
         arr.layer = layer
         arr.birth = birth
-        arr.flags.writeable = False
-        self.hash = hash(arr.data)
         arr.score = arr.fitness()
         return arr
 
-    def __eq__(self, other):
-        return self.hash == other.hash
     def __lt__(self, other):
         return self.score < other.score
     def __le__(self, other):
@@ -38,6 +34,15 @@ class Chromosome(sp.ndarray):
         return self.score >= other.score
     def __nonzero__(self):
         return True
+
+    def __eq__(self, other):
+        self.flags.writeable = False
+        self_hash = hash(self.data)
+        self.flags.writeable = True
+        other.flags.writeable = False
+        other_hash = hash(other.data)
+        other.flags.writeable = True
+        return self_hash == other_hash
 
     def __str__(self):
         return "score={:3f}, birth={}, {}".format(self.score, self.birth,
@@ -50,7 +55,7 @@ class Chromosome(sp.ndarray):
         self.score = getattr(obj, 'score', None)
         self.hash = getattr(obj, 'hash', None)
 
-    fitness = lambda self: self.layer.main.fitness(self, self.layer.name)
+    fitness = lambda self: self.layer.main.fitness(self, self.layer)
 
     def mutate(self):
         idx = sp_randint(0, self.size)

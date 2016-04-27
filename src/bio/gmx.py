@@ -11,8 +11,8 @@ class gmx():
 	ligand_name = 'zinc_11909586'
 	protein_ligand_box_file = 'conf_with_ligand10x10x10.pdb'
 	em_file = 'em.mdp'		
-	files_route = '../tmp/'
-	docked_files_route = '../../tmp/'
+	files_route = 'files/'
+	docked_files_route = '../tmp/'
 	docked_pair = 'dockedpair.pdb'
 
 	protein_topology = "gmx pdb2gmx -ignh -f "+ files_route + protein_file + " -ff " + forcefield + " -water none"
@@ -40,10 +40,9 @@ class gmx():
 		return (gmx.ligand_name+gmx.nspaces(pos-len(gmx.ligand_name)))+'1'
 
 	@staticmethod
-	def generate_protein_topology():
+	def generate_protein_topology(protein_path):
 		try:
-			p = subprocess.Popen(shlex.split(gmx.protein_topology), universal_newlines=True,
-				                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			p = subprocess.Popen(shlex.split("gmx pdb2gmx -ignh -f  {} -ff {} -water none".format(protein_path, gmx.forcefield)), universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			out,err = p.communicate()
 		except Exception:
 			e = sys.exc_info()[1]				
@@ -150,12 +149,12 @@ class gmx():
 		return energy
 
 #Ejemplo
-os.chdir(gmx.files_route) # cambia al directorio donde estan los archivos
-gmx.generate_protein_topology() #genera la topologia de la proteina
-gmx.process_topology() # genera la topologia de la proteina con el ligando
-os.chdir('../bio') # cambia de vuelta al directorio donde esta el codigo
-
+#os.chdir(gmx.files_route) # cambia al directorio donde estan los archivos
+#gmx.generate_protein_topology('ALPSLayer0') #genera la topologia de la proteina
+#gmx.process_topology() # genera la topologia de la proteina con el ligando
+#os.chdir('..') # cambia de vuelta al directorio donde esta el codigo
+#gmx.protein_ligand_box('ALPSLayer0')
 #fitness
-gmx.process_folders('HiloPrueba') 
-os.chdir('HiloPrueba')
-print gmx.calculate_fitness('HiloPrueba')
+#gmx.process_folders('ALPSLayer0') 
+os.chdir('ALPSLayer0')
+print gmx.calculate_fitness('ALPSLayer0')
