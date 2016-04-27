@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-def plus(layer, new_pop, old_pop=[], **kwargs):
+def plus(main, new_pop, old_pop=[], **kwargs):
     """"Elitismo para lamdba más mu
 
     Devuelve los mejores elementos de la unión de las poblaciones dadas
@@ -13,11 +13,11 @@ def plus(layer, new_pop, old_pop=[], **kwargs):
     """
     population = new_pop + old_pop
     population.sort()
-    del population[layer.main.pop_size:]
+    del population[main.pop_size:]
     return population
 
 
-def comma(layer, new_pop, **kwargs):
+def comma(main, new_pop, **kwargs):
     """Elitismo para lamdba coma mu
 
     Devuelve los mejores elementos de la población nueva en tiempo
@@ -27,13 +27,13 @@ def comma(layer, new_pop, **kwargs):
     new_pop ~ población de tamaño lambda de individuos recién generados
     old_pop ~ población de tamaño mu de individuos viejos
     """
-    del new_pop[layer.main.pop_size:]
+    del new_pop[main.pop_size:]
     return new_pop
 
 
-def enhanced(layer, new_pop, old_pop=[]):
-    del old_pop[layer.main.preserve:]
-    create = layer.main.pop_size - len(old_pop)
+def enhanced(main, new_pop, old_pop=[]):
+    del old_pop[main.preserve:]
+    create = main.pop_size - len(old_pop)
     del new_pop[create:]
     population = new_pop + old_pop
     population.sort()

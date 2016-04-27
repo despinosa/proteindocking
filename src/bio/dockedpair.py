@@ -10,6 +10,8 @@ from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
 from math import pi
 from os import mkdir, path, remove
+from tempfile import gettempdir
+from threading import current_thread
 import scipy as sp
 
 
@@ -38,17 +40,19 @@ class DockedPair(object):
         origin = self.cavities[int(round(arr[0]))]['R']
         self.ligand.transform(rotation, origin.coord)
 
-    def free_energy(self, layer):
+    def free_energy(self):
         out = PDBOut()
         out.set_structure(self.structure)
-        my_path = path.join(gettempdir(), 'tmp', layer.name)
+        my_path = path.join(gettempdir(), 'tmp', current_thread().name)
         if not path.exists(my_path):
             mkdir(my_path)
         my_path = path.join(my_path, 'dockedpair.pdb')
         if path.exists(my_path):
             remove(my_path)
         out.save(my_path, self.model0select)
-        gmx.process_folders(layer.name)
-        gmx.protein_ligand_box()
-        return gmx.calculate_fitness()
+        # gmx.process_folders(current_thread().name)
+        # gmx.protein_ligand_box()
+        # return gmx.calculate_fitness()
+        from random import random
+        return random()
 

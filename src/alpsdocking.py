@@ -14,8 +14,11 @@ class ALPSDocking(DockingProblem, ALPS):
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
                    stop_condition, elitism, crossover)
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path)
+        root = path.join(gettempdir(), 'tmp')
+        if not path.exists(root):
+            mkdir(root)
         for layer in self.layers:
-            new_folder = path.join(gettempdir(), 'tmp', layer.name)
+            new_folder = path.join(root, layer.name)
             if not path.exists(new_folder):
                 mkdir(new_folder)
 
@@ -39,7 +42,7 @@ if __name__ == '__main__':
 
     ligand_path, protein_path, cavities_path = argv[1:4]
     docking = ALPSDocking(ligand_path, protein_path, cavities_path,
-                          50, 0.1, 0.8, 5, gen_limit, enhanced,
+                          10, 0.1, 0.8, 5, gen_limit, enhanced,
                           single_point)
     docking.start()
     start = datetime.now()

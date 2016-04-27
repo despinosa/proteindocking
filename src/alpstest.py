@@ -54,7 +54,7 @@ class ALPSTest(ALPS):
         for lay in self.layers:
             lay.join()
 
-    def fitness(self, arr, layer):
+    def fitness(self, arr):
         return rastrigin(arr)
 
 if __name__ == '__main__':

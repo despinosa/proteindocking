@@ -67,9 +67,9 @@ class DockingProblem(Thread):
             upper = sp.array((n_cavities-eps-0.5, 2*pi, 2*pi))
             return lower, upper
 
-        gmx.add_hydrogens()
-        gmx.generate_protein_topology()
-        gmx.process_topology()
+        # gmx.add_hydrogens()
+        # gmx.generate_protein_topology()
+        # gmx.process_topology()
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
         self.original.add(Model(0))
@@ -80,9 +80,9 @@ class DockingProblem(Thread):
         self.original[1].add(cavities)
         self.lower, self.upper = encode(len(cavities))
 
-    def fitness(self, arr, layer):
+    def fitness(self, arr):
         pair = DockedPair(self, arr)
-        return pair.free_energy(layer)
+        return pair.free_energy()
 
     @abstractmethod
     def estimate_progress(self):
