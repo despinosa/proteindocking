@@ -13,6 +13,8 @@ from gmx import gmx
 from math import pi
 from threading import Thread
 import scipy as sp
+import os
+import shutil
 
 
 SecStructure = namedtuple('SecStructure', ('type_', 'first'))
@@ -65,11 +67,30 @@ class DockingProblem(Thread):
             eps = 10**-15
             lower = sp.array((eps-0.5, 0, 0))
             upper = sp.array((n_cavities-eps-0.5, 2*pi, 2*pi))
-            return lower, upper
+            return lower, upper      
+        def load_folders():
+            currentwd = os.getcwd()
+            if not exists(os.path.join(gmx.TEMPDIR,gmx.ROOT)):
+                mkdir(os.path.join(gmx.TEMPDIR,gmx.ROOT))
+                chdir(os.path.join(gmx.TEMPDIR,gmx.ROOT))
+                mkdir(gmx.FILES)
+                mkdir(gmx.TMP)
+            chdir(currentwd)
+            shutil.copyfile(self.ligand_name+'.pdb',os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))  
+            shutil.copyfile(self.ligand_name+'.itp',os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
+            shutil.copyfile(self.protein_file,os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))  
 
-        # gmx.add_hydrogens()
-        # gmx.generate_protein_topology()
-        # gmx.process_topology()
+        self.protein_file = os.path.split(protein_path)[1]        
+        self.ligand_name = os.path.split(ligand_path)[1].split('.')[0]        
+        load_folders()
+        protein_path = os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.protein_file)
+        ligand_path = os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,'{}.pdb'.format(self.ligand_name))
+        gmx.generate_protein_topology()   
+        os.chdir(os.path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
+        os.remove(gmx.protein_file)
+        gmx.add_hydrogens()
+        gmx.generate_protein_topology()
+
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
         self.original.add(Model(0))

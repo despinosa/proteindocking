@@ -12,6 +12,7 @@ from math import pi
 from os import mkdir, path, remove
 from tempfile import gettempdir
 from threading import current_thread
+from gmx import gmx
 import scipy as sp
 
 
@@ -30,6 +31,7 @@ class DockedPair(object):
         self.ligand = self.structure[0]['S']
         self.protein = self.structure[0]['P']
         self.cavities = self.structure[1]['C']
+        self.main = main
         self.decode(arr)
 
     def decode(self, arr):
@@ -43,16 +45,16 @@ class DockedPair(object):
     def free_energy(self):
         out = PDBOut()
         out.set_structure(self.structure)
-        my_path = path.join(gettempdir(), 'tmp', current_thread().name)
+        my_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP,current_thread().name)
         if not path.exists(my_path):
             mkdir(my_path)
         my_path = path.join(my_path, 'dockedpair.pdb')
         if path.exists(my_path):
             remove(my_path)
         out.save(my_path, self.model0select)
-        # gmx.process_folders(current_thread().name)
-        # gmx.protein_ligand_box()
-        # return gmx.calculate_fitness()
-        from random import random
-        return random()
+        gmx.process_folders()
+        gmx.protein_ligand_box()
+        return gmx.calculate_fitness()
+        # from random import random
+        # return random()
 
