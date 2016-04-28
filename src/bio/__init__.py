@@ -1,1 +1,1 @@
-__all__ = ['dockingproblem', 'dockedpair']
+__all__ = ['dockingproblem', 'dockedpair','gmx']

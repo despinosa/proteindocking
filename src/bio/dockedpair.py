@@ -52,8 +52,7 @@ class DockedPair(object):
         if path.exists(my_path):
             remove(my_path)
         out.save(my_path, self.model0select)
-        gmx.process_folders()
-        gmx.protein_ligand_box()
+        gmx.process_folders(self.main)        
         return gmx.calculate_fitness()
         # from random import random
         # return random()
