@@ -45,15 +45,10 @@ class DockedPair(object):
     def free_energy(self):
         out = PDBOut()
         out.set_structure(self.structure)
-        my_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP,current_thread().name)
-        if not path.exists(my_path):
-            mkdir(my_path)
-        my_path = path.join(my_path, 'dockedpair.pdb')
+        my_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)        
+        my_path = path.join(my_path, 'dockedpair_{}.pdb'.format(current_thread().name))
         if path.exists(my_path):
             remove(my_path)
-        out.save(my_path, self.model0select)
-        gmx.process_folders(self.main)        
-        return gmx.calculate_fitness()
-        # from random import random
-        # return random()
+        out.save(my_path, self.model0select)        
+        return gmx.calculate_fitness()        
 

@@ -13,8 +13,7 @@ class gmx():
 	FILES = 'files'
 	TMP = 'tmp'
 	GMX_FILES = 'gmx_files'	
-			
-	dockedpair = 'dockedpair.pdb'
+				
 	em_file = 'em.mdp'			
 	forcefield = 'charmm27'
 	topol_with_ligand_file = 'topol_with_ligand.top' 		
@@ -68,10 +67,10 @@ class gmx():
 			args = None
 			while(i<n):
 				p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
-					                     stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)								
+					                     stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)												
 				if i:
 					args = '0'
-				out,err = p.communicate(args)	
+				out,err = p.communicate(args)					
 				p.stdin.close()						
 				i += 1
 		except Exception:
@@ -87,17 +86,14 @@ class gmx():
 	def process_folders(dp_object):	
 		try:		
 			thread_name = current_thread().name											
-			gmx_path = os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP,thread_name,gmx.GMX_FILES)		
-			if os.path.exists(gmx_path):
-				gmx.delete_files_in_path(gmx_path)
+			gmx_path = os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)		
 			files_path = os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)
 			shutil.copy(os.path.join(files_path, dp_object.protein_file), gmx_path)		
 			shutil.copy(os.path.join(files_path, '{}.itp'.format(dp_object.ligand_name)), gmx_path)
 			shutil.copy(os.path.join(files_path, '{}.pdb'.format(dp_object.ligand_name)), gmx_path)
 			shutil.copy(os.path.join(files_path, gmx.em_file), gmx_path)
 			shutil.copy(os.path.join(files_path, gmx.topol_with_ligand_file), gmx_path)				
-			shutil.copy(os.path.join(files_path, 'conf.gro'), gmx_path)	
-			shutil.copy(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP,thread_name,gmx.dockedpair),os.path.join(gmx_path,gmx.dockedpair))		
+			shutil.copy(os.path.join(files_path, 'conf.gro'), gmx_path)				
 
 		except Exception:
 			e = sys.exc_info()[1]				
@@ -107,20 +103,18 @@ class gmx():
 	@staticmethod
 	def calculate_fitness():
 		energy = ''
-		final_energy = float('inf')
 		thread_name = current_thread().name	
-		os.chdir(os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP,thread_name,gmx.GMX_FILES))		
-		cmd_fitness = ["gmx grompp -v -f {} -c {} -o em.tpr -p {}".format(gmx.em_file,gmx.dockedpair,gmx.topol_with_ligand_file),
-		   		   "gmx mdrun -v -s em.tpr"]
+		dockedpair = 'dockedpair_{}.pdb'.format(thread_name)
+		final_energy = float('inf')				
+		cmd_fitness = ["gmx grompp -v -f {} -c {} -o em_{}.tpr -p {}".format(gmx.em_file,dockedpair,thread_name,gmx.topol_with_ligand_file),
+		   		   "gmx mdrun -v -s em_{}.tpr".format(thread_name)]
 		try:
 			n = len(cmd_fitness)
 			i = 0
 			while(i<n):
 				p = subprocess.Popen(shlex.split(cmd_fitness[i]), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-				out,err = p.communicate()				
-				# print out
-				# print err
+				out,err = p.communicate()								
 				i += 1				
 
 				if p.returncode:
@@ -135,7 +129,7 @@ class gmx():
 					if err[i] != ' ':
 						energy += err[i]		
 					i += 1
-			###################		
+			###################					
 			final_energy = float(energy)
 		except Exception:
 			e = sys.exc_info()[1]				

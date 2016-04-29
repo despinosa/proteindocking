@@ -13,7 +13,7 @@ from gmx import gmx
 from math import pi
 from threading import Thread
 import scipy as sp
-from os import chdir,mkdir,path,remove,getcwd,makedirs
+from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
 import shutil
 
 
@@ -69,19 +69,12 @@ class DockingProblem(Thread):
             upper = sp.array((n_cavities-eps-0.5, 2*pi, 2*pi))
             return lower, upper   
 
-        def load_folders():
-            currentwd = getcwd()           
+        def load_folders():            
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
                 shutil.rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)            
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT))            
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
-            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))
-            root = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP)
-            for layer in self.layers:
-                new_folder = path.join(root, layer.name,gmx.GMX_FILES)
-                if not path.exists(new_folder):
-                    makedirs(new_folder)
-            chdir(currentwd)       
+            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))                        
 
         def load_files():                                    
             shutil.copy(ligand_path,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))  
@@ -98,14 +91,14 @@ class DockingProblem(Thread):
         self.new_protein_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.protein_file)
         self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,'{}.pdb'.format(self.ligand_name))
         self.new_cavities_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.cavities_file)
-        gmx.generate_protein_topology(self)   
-        currentwd = getcwd()
-        chdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))        
-        remove(self.protein_file)
+        gmx.generate_protein_topology(self)               
+        remove(self.new_protein_path)
         gmx.add_hydrogens(self)
         gmx.generate_protein_topology(self)
         gmx.process_topology(self)
-        chdir(currentwd)
+        gmx.process_folders(self)        
+        environ['GMX_MAXBACKUP'] = '-1'
+        chdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))
 
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
@@ -130,7 +123,6 @@ class DockingProblem(Thread):
         pass
 
     run = solve
-
 
 if __name__ == '__main__':
     from sys import argv
