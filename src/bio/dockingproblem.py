@@ -63,12 +63,6 @@ class DockingProblem(Thread):
             cavities_chain.id = 'C'
             return cavities_chain
 
-        def encode(n_cavities):
-            eps = 10**-15
-            lower = sp.array((eps-0.5, 0, 0))
-            upper = sp.array((n_cavities-eps-0.5, 2*pi, 2*pi))
-            return lower, upper   
-
         def load_folders():            
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
                 shutil.rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)            
@@ -77,11 +71,11 @@ class DockingProblem(Thread):
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))                        
 
         def load_files():                                    
-            shutil.copy(ligand_path,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))  
-            shutil.copy(itp_path,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
-            shutil.copy(protein_path,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))              
-            shutil.copy(cavities_path,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES)) 
-            shutil.copy('tmp/'+gmx.em_file,path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES)) 
+            shutil.copy(ligand_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))  
+            shutil.copy(itp_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            shutil.copy(protein_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))              
+            shutil.copy(cavities_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
+            shutil.copy(path.join('tmp', gmx.em_file), path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
 
         load_folders()
         self.protein_file = path.split(protein_path)[1]        
@@ -103,12 +97,22 @@ class DockingProblem(Thread):
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
         self.original.add(Model(0))
-        self.original[0].add(load_protein(parser))
-        self.original[0].add(load_ligand(parser))
+        self.protein = load_protein(parser)
+        self.original[0].add(self.protein)
+        self.ligand = load_ligand(parser)
+        self.original[0].add(self.ligand)
         self.original.add(Model(1))
-        cavities = load_cavities(parser)
-        self.original[1].add(cavities)
-        self.lower, self.upper = encode(len(cavities))
+        self.cavities = load_cavities(parser)
+        self.original[1].add(self.cavities)
+        self.encode()
+
+    def encode(self):
+        self.lise_rltt = map(lambda cav: cav['R'].bfactor, self.cavities)
+        for i in xrange(1, len(self.lise_rltt)):
+            self.lise_rltt[i] += self.lise_rltt[i-1]
+        lise_max = self.lise_rltt.pop()
+        self.lower = sp.array((     0.0,  0.0,  0.0, 0.0, 2*pi, 2*pi), 'f')
+        self.upper = sp.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
 
     def fitness(self, arr):
         pair = DockedPair(self, arr)

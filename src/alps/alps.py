@@ -3,14 +3,22 @@
 
 from abc import ABCMeta, abstractmethod
 from alpslayer import ALPSLayer
-from definitions.agingscheme import fibonacci
+from definitions.agingscheme import linear
 
 class ALPS(object):
     __metaclass__ = ABCMeta
 
+    instances = 0
+
+    def __init__(self):
+        super(ALPS, self).__init__()
+        self.__class__.instances += 1
+
     def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
               stop_condition, elitism, crossover, n_parents=2,
-              max_generations=50, aging_scheme=fibonacci, n_layers=7):
+              max_generations=50, aging_scheme=linear, n_layers=5):
+        self.name = '{}{}'.format(self.__class__.__name__.lower(),
+                                  self.instances)
         self.pop_size = pop_size
         self.tourn_size = tourn_size
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
@@ -22,7 +30,7 @@ class ALPS(object):
         self.n_parents = n_parents
         self.max_generations = max_generations
         self.generation = 0
-        age_limits = aging_scheme()
+        age_limits = aging_scheme(10)
         self.layers = [ALPSLayer(self, i, age_limits.next())
                        for i in xrange(n_layers)]
         for i in xrange(1, len(self.layers)):

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import scipy as sp
+from threading import Lock
 # import numpy as np
 
 sp_rand = sp.random.random
@@ -21,28 +22,37 @@ class Chromosome(sp.ndarray):
             arr += main.lower
         arr.main = main
         arr.birth = birth
-        arr.score = arr.fitness()
+        arr.score = None
+        arr.flags.writeable = False
+        arr.hash = hash(arr.data)
+        arr.lock = Lock()
         return arr
 
     def __lt__(self, other):
+        if self.score is None: self.score = self.fitness()
+        if other.score is None: other.score = other.fitness()
         return self.score < other.score
+
     def __le__(self, other):
+        if self.score is None: self.score = self.fitness()
+        if other.score is None: other.score = other.fitness()
         return self.score <= other.score
+
     def __gt__(self, other):
+        if self.score is None: self.score = self.fitness()
+        if other.score is None: other.score = other.fitness()
         return self.score > other.score
+
     def __ge__(self, other):
+        if self.score is None: self.score = self.fitness()
+        if other.score is None: other.score = other.fitness()
         return self.score >= other.score
+
     def __nonzero__(self):
         return True
 
     def __eq__(self, other):
-        self.flags.writeable = False
-        self_hash = hash(self.data)
-        self.flags.writeable = True
-        other.flags.writeable = False
-        other_hash = hash(other.data)
-        other.flags.writeable = True
-        return self_hash == other_hash
+        return self.hash == other.hash
 
     def __str__(self):
         return "score={:3f}, birth={}, {}".format(self.score, self.birth,
@@ -54,11 +64,15 @@ class Chromosome(sp.ndarray):
         self.birth = getattr(obj, 'birth', None)
         self.score = getattr(obj, 'score', None)
         self.hash = getattr(obj, 'hash', None)
+        self.lock = getattr(obj, 'lock', None)
 
     fitness = lambda self: self.main.fitness(self)
 
     def mutate(self):
         idx = sp_randint(0, self.size)
-        self[idx] = self.main.lower[idx] + sp_rand() * (self.main.upper[idx]-
-                                                        self.main.lower[idx])
-        self.score = self.fitness()
+        with self.lock:
+            self.flags.writeable = True
+            self[idx] = self.main.lower[idx] + sp_rand()*(self.main.upper[idx]-
+                                                          self.main.lower[idx])
+            self.flags.writeable = False
+            self.hash = hash(self.data)

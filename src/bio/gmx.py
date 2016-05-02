@@ -23,15 +23,15 @@ class gmx():
 		with open(gmx.topol_with_ligand_file,'r') as in_file:
 			buf = in_file.readlines()
 		with open(gmx.topol_with_ligand_file,'w') as out_file:	
-			allowed = 0		
+			allowed = 0
 			newfile = ''
 			for i,line in enumerate(buf):			
 				if '#include "'+gmx.forcefield+'.ff/forcefield.itp"' in line:
 					line += '#include "'+ligand_name+'.itp"\n'				
 				if '[ molecules ]' in line:
 					allowed = 1
-				if 'Protein' in line and allowed:					
-					if i == len(buf) - 1:											
+				if 'Protein' in line and allowed:
+					if i == len(buf) - 1:
 						line += ligand_name +' 1'
 					elif '[' or ']' in line:						
 						line += ligand_name +' 1'
@@ -114,8 +114,8 @@ class gmx():
 			while(i<n):
 				p = subprocess.Popen(shlex.split(cmd_fitness[i]), universal_newlines=True,
 			                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-				out,err = p.communicate()								
-				i += 1				
+				out,err = p.communicate()
+				i += 1
 
 				if p.returncode:
 					raise Exception(p.returncode)
@@ -129,10 +129,10 @@ class gmx():
 					if err[i] != ' ':
 						energy += err[i]		
 					i += 1
-			###################					
+			###################
 			final_energy = float(energy)
 		except Exception:
-			e = sys.exc_info()[1]				
+			e = sys.exc_info()[1]
 			print "Error: %s" % e
 			print err
 			print thread_name

@@ -14,7 +14,7 @@ class ALPSLayer(Thread):
     def __init__(self, main, i, max_age, prev_layer=None, next_layer=None):
         super(ALPSLayer, self).__init__()
         self.main = main
-        self.name = "{}{}".format(self.__class__.__name__, i)
+        self.name = "{}layer{}".format(main.name, i)
         self.max_age = max_age
         self.prev_layer = prev_layer
         self.next_layer = next_layer
@@ -56,7 +56,7 @@ class ALPSLayer(Thread):
                     tournament = sample(pool, self.main.tourn_size)
                     parents = nsmallest(self.main.n_parents, tournament)
                     for child in self.main.crossover(*parents):
-                        insort(offspring, child) # n
+                        offspring.append(child) # n
             return offspring
 
         def mutate(offspring):
@@ -65,7 +65,7 @@ class ALPSLayer(Thread):
                 for _ in repeat(None, self.main.mutate_cycles): # mutación
                     mutated = offspring.pop(randint(0, off_size-1))
                     mutated.mutate()
-                    insort(offspring, mutated)
+                    offspring.append(mutated)
             return offspring
 
         pool = self.population[:]
@@ -75,6 +75,7 @@ class ALPSLayer(Thread):
         self.copied.set()
         offspring = reproduce(pool)
         offspring = mutate(offspring)
+        offspring.sort()
         if self.next_layer is not None:
             self.next_layer.copied.wait()
             self.next_layer.copied.clear()

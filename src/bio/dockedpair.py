@@ -8,7 +8,8 @@ from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
-from math import pi
+from math import pi, cos, sin
+from bisect import bisect
 from os import mkdir, path, remove
 from tempfile import gettempdir
 from threading import current_thread
@@ -19,11 +20,12 @@ import scipy as sp
 class Model0Select(Select):
     def accept_model(self, model):
         return model.id == 0
-        
+
 
 class DockedPair(object):
     """docstring for DockedPair"""
-    model0select = Model0Select()
+    model0 = Model0Select()
+    all_ = Select()
 
     def __init__(self, main, arr):
         super(DockedPair, self).__init__()
@@ -35,20 +37,30 @@ class DockedPair(object):
         self.decode(arr)
 
     def decode(self, arr):
-        in_place = sp.array((0, 0, 0), 'f')
+        cavity = self.cavities[bisect(self.main.lise_rltt, arr[0])]['R']
+        shift = cavity.occupancy * arr[3]
+        origin = (sp.array((shift * cos(arr[4]) * sin(arr[5]),
+                            shift * sin(arr[4]) * sin(arr[5]),
+                            shift * cos(arr[5])), 'f')
+                  + cavity.coord)
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
-        self.ligand.transform(rotation, in_place)
+        self.ligand.transform(rotation, origin)
+        in_place = sp.array((0, 0, 0), 'f')
         rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
-        origin = self.cavities[int(round(arr[0]))]['R']
-        self.ligand.transform(rotation, origin.coord)
+        self.ligand.transform(rotation, in_place)
 
-    def free_energy(self):
+    def to_file(self, pdb_path, select=model0):
         out = PDBOut()
         out.set_structure(self.structure)
-        my_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)        
-        my_path = path.join(my_path, 'dockedpair_{}.pdb'.format(current_thread().name))
-        if path.exists(my_path):
-            remove(my_path)
-        out.save(my_path, self.model0select)        
+        if path.exists(pdb_path):
+            remove(pdb_path)
+        out.save(pdb_path, select) #, self.model0select)  
+
+
+    def free_energy(self):
+        pdb_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)        
+        pdb_path = path.join(pdb_path,
+                             'dockedpair_{}.pdb'.format(current_thread().name))
+        self.to_file(pdb_path)
         return gmx.calculate_fitness()        
 

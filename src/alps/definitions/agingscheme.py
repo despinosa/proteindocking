@@ -1,24 +1,24 @@
-def fibonacci(start=1, **kwargs):
+def fibonacci(factor, start=1, **kwargs):
     prev_n = start
     n = start
     while True:
-        yield n
+        yield factor * n
         prev_n, n = n, n+prev_n
 
-def linear(start=1, step=1, **kwargs):
+def linear(factor, start=1, step=1, **kwargs):
     n = start
     while True:
-        yield n
+        yield factor * n
         n += step
 
-def polynomial(start=1, step=1, power=2):
+def polynomial(factor, start=1, step=1, power=2):
     n = start
     while True:
-        yield n ** power
+        yield factor * n ** power
         n += step
 
-def exponential(start=0, step=1, base=2):
+def exponential(factor, start=0, step=1, base=2):
     n = start
     while True:
-        yield base ** n
+        yield factor * base ** n
         n += step
