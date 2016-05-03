@@ -63,5 +63,5 @@ if __name__ == '__main__':
     a = ALPSTest(int(argv[1]))
     start = datetime.now()
     a.run()
-    print 'time: {}\n'.format(datetime.now()-start)
-    print 'best: {}\n\n'.format(a.layers[-1].population[0])
+    print 'time: {0}\n'.format(datetime.now()-start)
+    print 'best: {0}\n\n'.format(a.layers[-1].population[0])

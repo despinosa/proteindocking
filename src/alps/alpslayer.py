@@ -14,7 +14,7 @@ class ALPSLayer(Thread):
     def __init__(self, main, i, max_age, prev_layer=None, next_layer=None):
         super(ALPSLayer, self).__init__()
         self.main = main
-        self.name = "{}layer{}".format(main.name, i)
+        self.name = "{0}layer{1}".format(main.name, i)
         self.max_age = max_age
         self.prev_layer = prev_layer
         self.next_layer = next_layer

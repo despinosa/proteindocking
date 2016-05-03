@@ -55,7 +55,7 @@ class Chromosome(sp.ndarray):
         return self.hash == other.hash
 
     def __str__(self):
-        return "score={:3f}, birth={}, {}".format(self.score, self.birth,
+        return "score={:3f}, birth={0}, {1}".format(self.score, self.birth,
                                                   super(Chromosome, self).
                                                   __str__())
 

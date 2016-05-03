@@ -60,7 +60,7 @@ class DockedPair(object):
     def free_energy(self):
         pdb_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)        
         pdb_path = path.join(pdb_path,
-                             'dockedpair_{}.pdb'.format(current_thread().name))
+                             'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
         return gmx.calculate_fitness()        
 

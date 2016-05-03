@@ -17,8 +17,8 @@ class ALPS(object):
     def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
               stop_condition, elitism, crossover, n_parents=2,
               max_generations=50, aging_scheme=linear, n_layers=5):
-        self.name = '{}{}'.format(self.__class__.__name__.lower(),
-                                  self.instances)
+        self.name = '{0}{1}'.format(self.__class__.__name__.lower(),
+                                    self.instances)
         self.pop_size = pop_size
         self.tourn_size = tourn_size
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)

@@ -30,7 +30,7 @@ class DockingProblem(Thread):
         def load_ligand(parser):
             ligand_model = parser.get_structure('ligand', self.new_ligand_path)[0]
             if len(ligand_model) != 1:
-                raise ValueError(('el ligando ({}) no puede tener '
+                raise ValueError(('el ligando ({0}) no puede tener '
                                   'más de una cadena').format(self.new_ligand_path))
             ligand_chain = ligand_model.child_list[0]
             ligand_chain.id = 'S'
@@ -44,7 +44,7 @@ class DockingProblem(Thread):
             protein_struct = parser.get_structure('protein', self.new_protein_path)
             protein_model = protein_struct[0]
             if len(protein_model) != 1:
-                raise ValueError(('la proteína ({}) no puede tener '
+                raise ValueError(('la proteína ({0}) no puede tener '
                                   'más de una cadena').format(self.new_protein_path))
             protein_chain = protein_model.child_list[0]
             protein_chain.id = 'P'
@@ -53,7 +53,7 @@ class DockingProblem(Thread):
         def load_cavities(parser):
             cavities_model = parser.get_structure('cavities', self.new_cavities_path)[0]
             if len(cavities_model) != 1:
-                raise ValueError(('las cavidades ({}) deben estar '
+                raise ValueError(('las cavidades ({0}) deben estar '
                                   'en una sola cadena').format(self.new_cavities_path))
             cavities_chain = cavities_model.child_list[0]
             for residue in cavities_chain.copy():
@@ -75,7 +75,7 @@ class DockingProblem(Thread):
             shutil.copy(itp_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
             shutil.copy(protein_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))              
             shutil.copy(cavities_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
-            shutil.copy(path.join('tmp', gmx.em_file), path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
+            shutil.copy(path.join('files', gmx.em_file), path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
 
         load_folders()
         self.protein_file = path.split(protein_path)[1]        
@@ -83,7 +83,7 @@ class DockingProblem(Thread):
         self.cavities_file = path.split(cavities_path)[1]
         load_files()
         self.new_protein_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.protein_file)
-        self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,'{}.pdb'.format(self.ligand_name))
+        self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,'{0}.pdb'.format(self.ligand_name))
         self.new_cavities_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.cavities_file)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
