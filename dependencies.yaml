@@ -10,8 +10,8 @@
   OS X: incluída en el SO o instalar ![_conda_](https://conda.anaconda.org/)
   Windows: instalar ![_conda_](https://conda.anaconda.org/)
 
-- prerequisito: librería _scipy_ (python)
-  OS X: `pip install scipy` o incluída en _conda_
+- prerequisito: librería _numpy_ (python)
+  OS X: `pip install numpy` o incluída en _conda_
 
 - prerequisito: librería _biopython_ (python)
   OS X: `pip install biopython` o `conda install biopython`
