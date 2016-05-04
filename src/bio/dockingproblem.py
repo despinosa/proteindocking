@@ -12,7 +12,7 @@ from dockedpair import DockedPair
 from gmx import gmx
 from math import pi
 from threading import Thread
-import numpy as np
+import scipy as sp
 from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
 import shutil
 
@@ -111,8 +111,8 @@ class DockingProblem(Thread):
         for i in xrange(1, len(self.lise_rltt)):
             self.lise_rltt[i] += self.lise_rltt[i-1]
         lise_max = self.lise_rltt.pop()
-        self.lower = np.array((     0.0,  0.0,  0.0, 0.0, 2*pi, 2*pi), 'f')
-        self.upper = np.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
+        self.lower = sp.array((     0.0,  0.0,  0.0, 0.0, 2*pi, 2*pi), 'f')
+        self.upper = sp.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
 
     def fitness(self, arr):
         pair = DockedPair(self, arr)
@@ -133,5 +133,5 @@ if __name__ == '__main__':
     from dockedpair import DockedPair
     problem = DockingProblem()
     problem.setup(*argv[1:4])
-    arr = np.array([7, 2.35, 1.88], 'f')
+    arr = sp.array([7, 2.35, 1.88], 'f')
     problem.fitness(arr)

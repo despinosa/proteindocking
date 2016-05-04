@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import scipy as sp
 from threading import Lock
+# import numpy as np
 
-sp_rand = np.random.random
-sp_randint = np.random.randint
+sp_rand = sp.random.random
+sp_randint = sp.random.randint
 
-class Chromosome(np.ndarray):
+class Chromosome(sp.ndarray):
     def __new__(cls, main, birth, pieces=None):
         # if input_array: arr = np.asarray(input_array).view(cls)
         if pieces is not None:
-            arr = np.concatenate([piece[:] for piece in pieces]).view(cls)
+            arr = sp.concatenate([piece[:] for piece in pieces]).view(cls)
             if arr.size != main.lower.size:
                 raise TypeError("longitud incompatible: %d/%d".
                                 format(arr.size, main.lower.size))

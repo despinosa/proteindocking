@@ -5,7 +5,7 @@ from alps.definitions.crossover import single_point
 from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
 from random import random
-import numpy as np
+import scipy as sp
 from math import e, exp, sin, cos, pi
 
 limiteA=-20
@@ -44,8 +44,8 @@ class ALPSTest(ALPS):
     """docstring for ALPSTest"""
     def __init__(self, n):
         super(ALPSTest, self).__init__()
-        self.lower = np.full(n, -5.12)
-        self.upper = np.full(n, 5.12)
+        self.lower = sp.full(n, -5.12)
+        self.upper = sp.full(n, 5.12)
         self.setup(50, 0.1, 0.8, 5, gen_limit, enhanced, single_point)
 
     def run(self):
