@@ -16,7 +16,10 @@ class gmx():
                 
     em_file = 'em.mdp'            
     forcefield = 'charmm27'
-    topol_with_ligand_file = 'topol_with_ligand.top'         
+    topol_with_ligand_file = 'topol_with_ligand.top'   
+
+    gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
+    files_path = os.path.join(TEMPDIR, ROOT, FILES)      
 
     @staticmethod    
     def ioFile(ligand_name):        
@@ -89,15 +92,23 @@ class gmx():
     def process_folders(dp_object):    
         try:        
             thread_name = current_thread().name                                            
-            gmx_path = os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.TMP)        
-            files_path = os.path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)
-            shutil.copy(os.path.join(files_path, dp_object.protein_file), gmx_path)        
-            shutil.copy(os.path.join(files_path, '{0}.itp'.format(dp_object.ligand_name)), gmx_path)
-            shutil.copy(os.path.join(files_path, '{0}.pdb'.format(dp_object.ligand_name)), gmx_path)
-            shutil.copy(os.path.join(files_path, gmx.em_file), gmx_path)
-            shutil.copy(os.path.join(files_path, gmx.topol_with_ligand_file), gmx_path)                
-            shutil.copy(os.path.join(files_path, 'conf.gro'), gmx_path)                
+            
+            shutil.copy(os.path.join(gmx.files_path, dp_object.protein_file), gmx.gmx_path)        
+            shutil.copy(os.path.join(gmx.files_path, '{0}.itp'.format(dp_object.ligand_name)), gmx.gmx_path)
+            shutil.copy(os.path.join(gmx.files_path, '{0}.pdb'.format(dp_object.ligand_name)), gmx.gmx_path)
+            shutil.copy(os.path.join(gmx.files_path, gmx.em_file), gmx.gmx_path)
+            shutil.copy(os.path.join(gmx.files_path, gmx.topol_with_ligand_file), gmx.gmx_path)                
+            shutil.copy(os.path.join(gmx.files_path, 'conf.gro'), gmx.gmx_path)                
 
+        except Exception:
+            e = sys.exc_info()[1]                
+            print "Error: %s" % e
+            print thread_name
+    @staticmethod
+    def copy_em_top(thread_em_file,thread_top_file):
+        try:            
+            shutil.copy(os.path.join(gmx.files_path, gmx.em_file), os.path.join(gmx.gmx_path,thread_em_file))
+            shutil.copy(os.path.join(gmx.files_path, gmx.topol_with_ligand_file), os.path.join(gmx.gmx_path,thread_top_file))                
         except Exception:
             e = sys.exc_info()[1]                
             print "Error: %s" % e
@@ -107,11 +118,17 @@ class gmx():
     def calculate_fitness():
         energy = ''
         thread_name = current_thread().name    
+        thread_em_file = '{0}_{1}.{2}'.format(gmx.em_file.split('.')[0],thread_name,gmx.em_file.split('.')[1])
+        thread_top_file = '{0}_{1}.{2}'.format(gmx.topol_with_ligand_file.split('.')[0],thread_name,gmx.topol_with_ligand_file.split('.')[1])
+
+        if not (os.path.isfile(thread_em_file) and os.path.isfile(thread_top_file)):
+            gmx.copy_em_top(thread_em_file,thread_top_file)
+
         dockedpair = 'dockedpair_{0}.pdb'.format(thread_name)
         final_energy = float('inf')                
         cmd_fitness = [("gmx grompp -v -f {0} -c {1} -o em_{2}.tpr -p {3}".
-                        format(gmx.em_file, dockedpair, thread_name,
-                               gmx.topol_with_ligand_file)),
+                        format(thread_em_file, dockedpair, thread_name,
+                               thread_top_file)),
                        "gmx mdrun -v -s em_{0}.tpr".format(thread_name)]
         try:
             n = len(cmd_fitness)
@@ -122,9 +139,10 @@ class gmx():
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 out,err = p.communicate()
-                i += 1
+                i += 1            
 
                 if p.returncode:
+                    p.kill() ###### quickfix
                     raise Exception(p.returncode)
             #obtiene la energia
             pos = err.find('Epot=')
