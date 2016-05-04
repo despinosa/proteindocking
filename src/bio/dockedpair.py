@@ -52,8 +52,8 @@ class DockedPair(object):
     def to_file(self, pdb_path, select=model0):
         out = PDBOut()
         out.set_structure(self.structure)
-        if path.exists(pdb_path):
-            remove(pdb_path)
+        # if path.exists(pdb_path):
+        #     remove(pdb_path)
         out.save(pdb_path, select) #, self.model0select)  
 
 

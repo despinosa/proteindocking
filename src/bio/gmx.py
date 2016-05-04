@@ -1,6 +1,7 @@
 import subprocess
 import shutil
 import os
+import signal
 import shlex
 import sys
 from tempfile import gettempdir
@@ -139,10 +140,8 @@ class gmx():
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 out,err = p.communicate()
-                i += 1            
-
-                if p.returncode:
-                    p.kill() ###### quickfix
+                i += 1                            
+                if p.returncode:                    
                     raise Exception(p.returncode)
             #obtiene la energia
             pos = err.find('Epot=')
@@ -161,6 +160,7 @@ class gmx():
             print "Error: %s" % e
             print err
             print thread_name
+            p.kill()
         except ValueError:
             print energy
         return final_energy
