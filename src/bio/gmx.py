@@ -35,17 +35,10 @@ class gmx():
                     if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:
                         line += '#include "'+ligand_name+'.itp"\n'
                 elif forcefield_no == 2:
-                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:
-                        # lib_dir = gmx.get_gmx_library_dir()
-                        # if(len(lib_dir)):
-                        #     line += '#include "'+lib_dir+'/gromos54a7_atb.ff/forcefield.itp"\n'
-                        #     '#include "'+lib_dir+'/gromos54a7_atb.ff/spc.itp"\n'
-                        #     '#include "'+lib_dir+'/gromos54a7_atb.ff/ions.itp"\n'
-                        #     '#include "'+ligand_name+'.itp"\n'         
-                        line += '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"\n'
-                        '#include "'+gmx.forcefields[forcefield_no]+'.ff/spc.itp"\n'
+                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:     
+                        line += ('#include "'+gmx.forcefields[forcefield_no]+'.ff/spc.itp"\n'
                         '#include "'+gmx.forcefields[forcefield_no]+'.ff/ions.itp"\n'
-                        '#include "'+ligand_name+'.itp"\n'         
+                        '#include "'+ligand_name+'.itp"\n')         
                 if '[ molecules ]' in line:
                     allowed = 1
                 if 'Protein' in line and allowed:
@@ -55,27 +48,6 @@ class gmx():
                         line += ligand_name +' 1'
                 newfile += line
             out_file.write(newfile)       
-    @staticmethod
-    def get_gmx_library_dir():
-        libray_dir = ''        
-        cmd_version = ("gmx -version")
-        try:
-            p = subprocess.Popen(shlex.split(cmd_version), universal_newlines=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()                                    
-            pos = out.find('Library dir:')            
-            if pos != -1:                
-                i = pos + len('Library dir:')
-                while(1):                    
-                    if out[i] == '\n':
-                        break
-                    else:
-                        libray_dir += out[i]
-                    i += 1                                
-            return libray_dir.strip()
-        except Exception:
-            e = sys.exc_info()[1]
-            print "Error: %s" % e
     @staticmethod
     def center_mol(molecule):
         os.chdir(gmx.files_path)
@@ -100,7 +72,7 @@ class gmx():
     @staticmethod
     def generate_protein_topology(dp_object):                        
         os.chdir(gmx.files_path)
-        cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none".
+        cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none -missing".
                                 format(dp_object.protein_file,gmx.forcefields[dp_object.forcefield]))
         try:
             p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
