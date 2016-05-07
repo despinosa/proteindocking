@@ -55,9 +55,9 @@ class Chromosome(sp.ndarray):
         return self.hash == other.hash
 
     def __str__(self):
-        return "score={:3f}, birth={0}, {1}".format(self.score, self.birth,
-                                                  super(Chromosome, self).
-                                                  __str__())
+        return "score={0:3f}, birth={1}, {2}".format(self.score, self.birth,
+                                                     super(Chromosome, self).
+                                                             __str__())
 
     def __array_finalize__(self, obj):
         if obj is None: return
@@ -66,7 +66,8 @@ class Chromosome(sp.ndarray):
         self.hash = getattr(obj, 'hash', None)
         self.lock = getattr(obj, 'lock', None)
 
-    fitness = lambda self: self.main.fitness(self)
+    def fitness(self):
+        with self.lock: return self.main.fitness(self)
 
     def mutate(self):
         idx = sp_randint(0, self.size)

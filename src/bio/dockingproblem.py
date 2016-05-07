@@ -11,10 +11,11 @@ from collections import namedtuple
 from dockedpair import DockedPair
 from gmx import gmx
 from math import pi
+from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
+from re import match, search
+from shutil import rmtree, copy
 from threading import Thread
 import scipy as sp
-from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
-import shutil
 
 
 SecStructure = namedtuple('SecStructure', ('type_', 'first'))
@@ -28,33 +29,37 @@ class DockingProblem(Thread):
 
     def setup(self, ligand_path, protein_path, cavities_path,itp_path):
         def load_ligand(parser):
-            ligand_model = parser.get_structure('ligand', self.new_ligand_path)[0]
+            ligand_model = parser.get_structure('ligand',
+                                                self.new_ligand_path)[0]
             if len(ligand_model) != 1:
-                raise ValueError(('el ligando ({0}) no puede tener '
-                                  'más de una cadena').format(self.new_ligand_path))
+                raise ValueError(('el ligando ({0}) no puede tener más de una '
+                                  'cadena').format(self.new_ligand_path))
             ligand_chain = ligand_model.child_list[0]
             ligand_chain.id = 'S'
             return ligand_chain
 
         def load_protein(parser):
-            protein_struct = parser.get_structure('protein', self.new_protein_path)
+            protein_struct = parser.get_structure('protein',
+                                                  self.new_protein_path)
             out = PDBOut()
             out.set_structure(protein_struct)
             out.save(self.new_protein_path, NonHOHSelect())
-            protein_struct = parser.get_structure('protein', self.new_protein_path)
+            protein_struct = parser.get_structure('protein',
+                                                  self.new_protein_path)
             protein_model = protein_struct[0]
             if len(protein_model) != 1:
-                raise ValueError(('la proteína ({0}) no puede tener '
-                                  'más de una cadena').format(self.new_protein_path))
+                raise ValueError(('la proteína ({0}) no puede tener más de una'
+                                  ' cadena').format(self.new_protein_path))
             protein_chain = protein_model.child_list[0]
             protein_chain.id = 'P'
             return protein_chain
 
         def load_cavities(parser):
-            cavities_model = parser.get_structure('cavities', self.new_cavities_path)[0]
+            cavities_model = parser.get_structure('cavities',
+                                                  self.new_cavities_path)[0]
             if len(cavities_model) != 1:
-                raise ValueError(('las cavidades ({0}) deben estar '
-                                  'en una sola cadena').format(self.new_cavities_path))
+                raise ValueError(('las cavidades ({0}) deben estar en una sola'
+                                  ' cadena').format(self.new_cavities_path))
             cavities_chain = cavities_model.child_list[0]
             for residue in cavities_chain.copy():
                 cavities_chain.detach_child(residue.id)
@@ -65,26 +70,47 @@ class DockingProblem(Thread):
 
         def load_folders():            
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
-                shutil.rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)            
-            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT))            
+                rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)
+            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT))
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
-            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))                        
+            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))
 
         def load_files():                                    
-            shutil.copy(ligand_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))  
-            shutil.copy(itp_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
-            shutil.copy(protein_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))              
-            shutil.copy(cavities_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
-            shutil.copy(path.join('files', gmx.em_file), path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES)) 
+            copy(ligand_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            copy(itp_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            copy(protein_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            copy(cavities_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            copy(path.join('files', gmx.em_file),
+                 path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+
+        def ligand_id(itp_file):
+            moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
+            comment = r'\s*;'
+            id_ = r'\s*(\w+)'
+            for line in itp_file:
+                if match(moltype, line.lower()): break
+            else:
+                raise ValueError('no se encuentra el identificador en {}'.
+                                        format(itp_file.name))
+            line = next(itp_file)
+            while match(comment, line): line = next(itp_file)
+            try:
+                return search(id_, line).group(1)
+            except AttributeError:
+                raise ValueError('no se encuentra el identificador en {}'.
+                                        format(itp_file.name))
 
         load_folders()
-        self.protein_file = path.split(protein_path)[1]        
-        self.ligand_name = path.split(ligand_path)[1].split('.')[0]        
+        self.protein_file = path.split(protein_path)[1]
+        self.ligand_name = ligand_id(open(itp_path, 'r'))
         self.cavities_file = path.split(cavities_path)[1]
         load_files()
-        self.new_protein_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.protein_file)
-        self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,'{0}.pdb'.format(self.ligand_name))
-        self.new_cavities_path = path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES,self.cavities_file)
+        self.new_protein_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES,
+                                          self.protein_file)
+        self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT, gmx.FILES,
+                                         '{0}.pdb'.format(self.ligand_name))
+        self.new_cavities_path = path.join(gmx.TEMPDIR,gmx.ROOT, gmx.FILES,
+                                           self.cavities_file)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
         gmx.add_hydrogens(self)
