@@ -161,7 +161,7 @@ class gmx():
             ###################
             final_energy = float(energy)
         except Exception:
-            e = sys.exc_info()[1]
+            e = sys.exc_info()[1]    
             print "Error: %s" % e
             print err
             print thread_name
