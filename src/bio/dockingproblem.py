@@ -76,8 +76,10 @@ class DockingProblem(Thread):
             mkdir(gmx.gmx_path)
 
         def load_files():                                    
-            copy(ligand_path, gmx.files_path)
-            copy(itp_path, gmx.files_path)
+            copy(ligand_path, path.join(gmx.files_path,
+                                        self.ligand_name+'.pdb'))
+            copy(itp_path, path.join(gmx.files_path,
+                                        self.ligand_name+'.itp'))
             copy(protein_path, gmx.files_path)
             copy(cavities_path, gmx.files_path)
             copy(path.join('files', gmx.em_file),
