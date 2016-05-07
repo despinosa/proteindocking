@@ -59,5 +59,5 @@ if __name__ == '__main__':
         except IndexError:
             pass
     pair = DockedPair(docking, best)
-    pair.to_file(argv[5], Select())
+    pair.to_file(argv[6], Select())
     print 'mejor:\t{0}\n\n'.format(best)

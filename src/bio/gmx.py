@@ -23,6 +23,8 @@ class gmx():
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
     files_path = os.path.join(TEMPDIR, ROOT, FILES)      
 
+    regexp_energy = re.compile('Epot=+[ ]*[-]+[0-9e.+]{1,100}')
+
     @staticmethod    
     def ioFile(ligand_name,forcefield_no):        
         with open(gmx.topol_with_ligand_file,'r') as in_file:
@@ -151,21 +153,12 @@ class gmx():
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 out,err = p.communicate()                
-                p.terminate()
                 i += 1                            
                 if p.returncode:                    
                     raise Exception(p.returncode)
-            #obtiene la energia
-            pos = err.find('Epot=')
-            if pos != -1:
-                i = pos + len('Epot=')
-                while(1):
-                    if err[i] == 'F':
-                        break
-                    if err[i] != ' ':
-                        energy += err[i]
-                    i += 1
-            ###################
+            str_energy = gmx.regexp_energy.search(err)            
+            if str_energy:                                
+                final_energy = float(str_energy.group().split('=')[-1].strip())
             final_energy = float(energy)
         except ValueError:
             print energy

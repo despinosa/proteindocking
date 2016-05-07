@@ -14,7 +14,7 @@ from os import mkdir, path, remove
 from tempfile import gettempdir
 from threading import current_thread
 from gmx import gmx
-import scipy as sp
+import numpy as np
 
 
 class Model0Select(Select):
@@ -39,13 +39,14 @@ class DockedPair(object):
     def decode(self, arr):
         cavity = self.cavities[bisect(self.main.lise_rltt, arr[0])]['R']
         shift = cavity.occupancy * arr[3]
-        origin = (sp.array((shift * cos(arr[4]) * sin(arr[5]),
+        origin = (np.array((shift * cos(arr[4]) * sin(arr[5]),
                             shift * sin(arr[4]) * sin(arr[5]),
-                            shift * cos(arr[5])), 'f')
+                            shift * cos(arr[5])))
                   + cavity.coord)
+        self.sqr_distance = sum(origin * origin)
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
         self.ligand.transform(rotation, origin)
-        in_place = sp.array((0, 0, 0), 'f')
+        in_place = np.array((0, 0, 0), 'f')
         rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
         self.ligand.transform(rotation, in_place)
 

@@ -103,9 +103,9 @@ class DockingProblem(Thread):
                                         format(itp_file.name))
 
         load_folders()
-        self.protein_file = path.split(protein_path)[1]
+        self.protein_file = path.split(protein_path)[-1]
         self.ligand_name = id_from_itp(open(itp_path, 'r'))
-        self.cavities_file = path.split(cavities_path)[1]
+        self.cavities_file = path.split(cavities_path)[-1]
         self.forcefield = int(forcefield)
         load_files()
         self.new_protein_path = path.join(gmx.files_path,
@@ -115,6 +115,7 @@ class DockingProblem(Thread):
         self.new_cavities_path = path.join(gmx.files_path,
                                            self.cavities_file)
         gmx.center_mol(self.protein_file)
+        gmx.center_mol(self.cavities_file)
         gmx.center_mol(self.ligand_name)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
@@ -147,7 +148,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):
         pair = DockedPair(self, arr)
-        return pair.free_energy()
+        return pair.free_energy() + pair.sqr_distance
 
     @abstractmethod
     def estimate_progress(self):
