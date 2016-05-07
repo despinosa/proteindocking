@@ -1,6 +1,7 @@
 import subprocess
 import shutil
 import os
+import re
 import signal
 import shlex
 import sys
@@ -16,23 +17,35 @@ class gmx():
     GMX_FILES = 'gmx_files'    
 
     em_file = 'em.mdp'            
-    forcefield = 'charmm27'
-    forcefield_atb = 'gromos54a7_atb.ff'
+    forcefields = {1:'charmm27',2:'gromos54a7_atb'}
     topol_with_ligand_file = 'topol_with_ligand.top'   
 
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
     files_path = os.path.join(TEMPDIR, ROOT, FILES)      
 
     @staticmethod    
-    def ioFile(ligand_name):        
+    def ioFile(ligand_name,forcefield_no):        
         with open(gmx.topol_with_ligand_file,'r') as in_file:
             buf = in_file.readlines()
         with open(gmx.topol_with_ligand_file,'w') as out_file:    
             allowed = 0
             newfile = ''
-            for i,line in enumerate(buf):            
-                if '#include "'+gmx.forcefield+'.ff/forcefield.itp"' in line:
-                    line += '#include "'+ligand_name+'.itp"\n'                
+            for i,line in enumerate(buf):                    
+                if forcefield_no == 1:        
+                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:
+                        line += '#include "'+ligand_name+'.itp"\n'
+                elif forcefield_no == 2:
+                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:
+                        # lib_dir = gmx.get_gmx_library_dir()
+                        # if(len(lib_dir)):
+                        #     line += '#include "'+lib_dir+'/gromos54a7_atb.ff/forcefield.itp"\n'
+                        #     '#include "'+lib_dir+'/gromos54a7_atb.ff/spc.itp"\n'
+                        #     '#include "'+lib_dir+'/gromos54a7_atb.ff/ions.itp"\n'
+                        #     '#include "'+ligand_name+'.itp"\n'         
+                        line += '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"\n'
+                        '#include "'+gmx.forcefields[forcefield_no]+'.ff/spc.itp"\n'
+                        '#include "'+gmx.forcefields[forcefield_no]+'.ff/ions.itp"\n'
+                        '#include "'+ligand_name+'.itp"\n'         
                 if '[ molecules ]' in line:
                     allowed = 1
                 if 'Protein' in line and allowed:
@@ -43,16 +56,35 @@ class gmx():
                 newfile += line
             out_file.write(newfile)       
     @staticmethod
+    def get_gmx_library_dir():
+        libray_dir = ''        
+        cmd_version = ("gmx -version")
+        try:
+            p = subprocess.Popen(shlex.split(cmd_version), universal_newlines=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out,err = p.communicate()                                    
+            pos = out.find('Library dir:')            
+            if pos != -1:                
+                i = pos + len('Library dir:')
+                while(1):                    
+                    if out[i] == '\n':
+                        break
+                    else:
+                        libray_dir += out[i]
+                    i += 1                                
+            return libray_dir.strip()
+        except Exception:
+            e = sys.exc_info()[1]
+            print "Error: %s" % e
+    @staticmethod
     def center_mol(molecule):
         os.chdir(gmx.files_path)
-        cmd_center = ("gmx editconf -f {0} -c -o {1}".
-                                format(molecule,molecule)
-         try:
+        molecule = molecule.split('.')[0]
+        cmd_center = ("gmx editconf -f {0}.pdb -c -o {0}.pdb".format(molecule))
+        try:
             p = subprocess.Popen(shlex.split(cmd_center), universal_newlines=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()
-            print out
-            print err
+            out,err = p.communicate()   
         except Exception:
             e = sys.exc_info()[1]
             print "Error: %s" % e
@@ -60,20 +92,20 @@ class gmx():
     @staticmethod
     def process_topology(dp_object):
         os.chdir(gmx.files_path)
+        if not os.path.isfile('topol.top'):
+            raise OSError('Checar GMX')
         shutil.copyfile('topol.top',gmx.topol_with_ligand_file)
-        gmx.ioFile(dp_object.ligand_name)
+        gmx.ioFile(dp_object.ligand_name,dp_object.forcefield)
 
     @staticmethod
     def generate_protein_topology(dp_object):                        
         os.chdir(gmx.files_path)
         cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none".
-                                format(dp_object.protein_file,gmx.forcefield))
+                                format(dp_object.protein_file,gmx.forcefields[dp_object.forcefield]))
         try:
             p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()
-            print out
-            print err
+            out,err = p.communicate()            
         except Exception:
             e = sys.exc_info()[1]
             print "Error: %s" % e
@@ -89,14 +121,16 @@ class gmx():
             n = len(cmd_hydrogens)
             i = 0
             args = None
+            if not (os.path.isfile('conf.gro') or os.path.isfile(dp_object.protein_file)):
+                raise OSError('Checar GMX')
             while(i<n):
-                p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
-                                         stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                
                 if i:
-                    args = '0'                
-                out,err = p.communicate(args)              
-                print out
-                print err                      
+                    args = '0'
+                    if not os.path.isfile('em_aux.tpr'):
+                        raise OSError('Checar GMX')
+                p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
+                                         stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                                
+                out,err = p.communicate(args)                                      
                 p.stdin.close()                        
                 i += 1
         except Exception:
@@ -144,14 +178,15 @@ class gmx():
                                      universal_newlines=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
-                out,err = p.communicate()
+                out,err = p.communicate()                
+                p.terminate()
                 i += 1                            
                 if p.returncode:                    
                     raise Exception(p.returncode)
             #obtiene la energia
             pos = err.find('Epot=')
             if pos != -1:
-                i = pos + 5
+                i = pos + len('Epot=')
                 while(1):
                     if err[i] == 'F':
                         break
@@ -160,15 +195,12 @@ class gmx():
                     i += 1
             ###################
             final_energy = float(energy)
+        except ValueError:
+            print energy
         except Exception:
             e = sys.exc_info()[1]    
             print "Error: %s" % e
+            print out
             print err
-            print thread_name
-            p.kill()
-            p.terminate()
-            
-        except ValueError:
-            print energy
+            print thread_name                    
         return final_energy
-

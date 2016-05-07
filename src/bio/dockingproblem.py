@@ -27,7 +27,7 @@ class NonHOHSelect(Select):
 class DockingProblem(Thread):
     __metaclass__ = ABCMeta
 
-    def setup(self, ligand_path, protein_path, cavities_path,itp_path):
+    def setup(self, ligand_path, protein_path, cavities_path,itp_path,forcefield):
         def load_ligand(parser):
             ligand_model = parser.get_structure('ligand',
                                                 self.new_ligand_path)[0]
@@ -72,16 +72,16 @@ class DockingProblem(Thread):
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
                 rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT))
-            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.FILES))
-            mkdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))
+            mkdir(gmx.files_path)
+            mkdir(gmx.gmx_path)
 
         def load_files():                                    
-            copy(ligand_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
-            copy(itp_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
-            copy(protein_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
-            copy(cavities_path, path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+            copy(ligand_path, gmx.files_path)
+            copy(itp_path, gmx.files_path)
+            copy(protein_path, gmx.files_path)
+            copy(cavities_path, gmx.files_path)
             copy(path.join('files', gmx.em_file),
-                 path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
+                 gmx.files_path)
 
         def id_from_itp(itp_file):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
@@ -104,13 +104,16 @@ class DockingProblem(Thread):
         self.protein_file = path.split(protein_path)[1]
         self.ligand_name = id_from_itp(open(itp_path, 'r'))
         self.cavities_file = path.split(cavities_path)[1]
+        self.forcefield = int(forcefield)
         load_files()
-        self.new_protein_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES,
+        self.new_protein_path = path.join(gmx.files_path,
                                           self.protein_file)
-        self.new_ligand_path = path.join(gmx.TEMPDIR,gmx.ROOT, gmx.FILES,
+        self.new_ligand_path = path.join(gmx.files_path,
                                          '{0}.pdb'.format(self.ligand_name))
-        self.new_cavities_path = path.join(gmx.TEMPDIR,gmx.ROOT, gmx.FILES,
+        self.new_cavities_path = path.join(gmx.files_path,
                                            self.cavities_file)
+        gmx.center_mol(self.protein_file)
+        gmx.center_mol(self.ligand_name)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
         gmx.add_hydrogens(self)
@@ -118,7 +121,7 @@ class DockingProblem(Thread):
         gmx.process_topology(self)
         gmx.process_folders(self)        
         environ['GMX_MAXBACKUP'] = '-1'
-        chdir(path.join(gmx.TEMPDIR,gmx.ROOT,gmx.TMP))
+        chdir(gmx.gmx_path)
 
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
