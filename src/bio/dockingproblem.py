@@ -83,7 +83,7 @@ class DockingProblem(Thread):
             copy(path.join('files', gmx.em_file),
                  path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES))
 
-        def ligand_id(itp_file):
+        def id_from_itp(itp_file):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
             comment = r'\s*;'
             id_ = r'\s*(\w+)'
@@ -102,7 +102,7 @@ class DockingProblem(Thread):
 
         load_folders()
         self.protein_file = path.split(protein_path)[1]
-        self.ligand_name = ligand_id(open(itp_path, 'r'))
+        self.ligand_name = id_from_itp(open(itp_path, 'r'))
         self.cavities_file = path.split(cavities_path)[1]
         load_files()
         self.new_protein_path = path.join(gmx.TEMPDIR, gmx.ROOT, gmx.FILES,
