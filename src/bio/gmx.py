@@ -16,7 +16,7 @@ class gmx():
     GMX_FILES = 'gmx_files'    
                 
     em_file = 'em.mdp'            
-    forcefield = 'charmm27'
+    forcefield = 'gromos54a7_atb'
     topol_with_ligand_file = 'topol_with_ligand.top'   
 
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
