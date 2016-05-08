@@ -139,16 +139,29 @@ class DockingProblem(Thread):
         self.encode()
 
     def encode(self):
+        """Codifica el problema en un arreglo de longitud 6.
+
+        Se construye una _ruleta_ de selección para determinar la
+        cavidad a probar en una solución propuesta. También se definen
+        los límites superior e inferior de cada posición del arreglo.
+
+        arr[0]  ~   Valor del tiro de la _ruleta_ de cavidades.
+        arr[1:2]~   Ángulos de rotación del ligando.
+        arr[3]  ~   Desfase respecto al centro de la cavidad.
+        arr[4:5]~   Ángulos de traslación del desfase.
+
+        """
+
         self.lise_rltt = map(lambda cav: cav['R'].bfactor, self.cavities)
         for i in xrange(1, len(self.lise_rltt)):
             self.lise_rltt[i] += self.lise_rltt[i-1]
         lise_max = self.lise_rltt.pop()
-        self.lower = sp.array((     0.0,  0.0,  0.0, 0.0, 2*pi, 2*pi), 'f')
+        self.lower = sp.array((     0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
         self.upper = sp.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
 
     def fitness(self, arr):
         pair = DockedPair(self, arr)
-        return pair.free_energy() + pair.sqr_distance
+        return pair.free_energy() # + pair.sqr_distance
 
     @abstractmethod
     def estimate_progress(self):
