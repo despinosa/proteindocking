@@ -41,8 +41,8 @@ if __name__ == '__main__':
 
     ligand_path, protein_path, cavities_path, itp_path, forcefield = argv[1:6]
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, forcefield,
-                          10, 0.1, 0.8, 5, gen_limit, enhanced,
-                          single_point, max_generations=33, n_layers=3)
+                          20, 0.1, 0.8, 5, gen_limit, enhanced,
+                          single_point, max_generations=111, n_layers=3)
     widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
     pbar = ProgressBar(widgets=widgets).start()  
     docking.start()

@@ -89,22 +89,23 @@ class DockingProblem(Thread):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
             comment = r'\s*;'
             id_ = r'\s*(\w+)'
+            not_found = ValueError('no se encuentra el identificador en {}'.
+                                       format(itp_file.name))
             for line in itp_file:
                 if match(moltype, line.lower()): break
             else:
-                raise ValueError('no se encuentra el identificador en {}'.
-                                        format(itp_file.name))
+                raise not_found
             line = next(itp_file)
             while match(comment, line): line = next(itp_file)
             try:
                 return search(id_, line).group(1)
             except AttributeError:
-                raise ValueError('no se encuentra el identificador en {}'.
-                                        format(itp_file.name))
+                raise not_found
 
         load_folders()
         self.protein_file = path.split(protein_path)[-1]
-        self.ligand_name = id_from_itp(open(itp_path, 'r'))
+        with open(itp_path, 'r') as itp_file:
+            self.ligand_name = id_from_itp(itp_file)
         self.cavities_file = path.split(cavities_path)[-1]
         self.forcefield = int(forcefield)
         load_files()
@@ -114,8 +115,8 @@ class DockingProblem(Thread):
                                          '{0}.pdb'.format(self.ligand_name))
         self.new_cavities_path = path.join(gmx.files_path,
                                            self.cavities_file)
-        gmx.center_mol(self.protein_file)
-        gmx.center_mol(self.cavities_file)
+        # gmx.center_mol(self.protein_file)
+        # gmx.center_mol(self.cavities_file)
         gmx.center_mol(self.ligand_name)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
