@@ -23,7 +23,7 @@ class gmx():
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
     files_path = os.path.join(TEMPDIR, ROOT, FILES)      
 
-    regexp_energy = re.compile('Epot=+[ ]*[-]+[0-9e.+]{1,100}')
+    regexp_energy = re.compile('Epot=*[ ]*[-]+[0-9.+e]{1,100}')
 
     @staticmethod    
     def ioFile(ligand_name,forcefield_no):        
@@ -134,8 +134,7 @@ class gmx():
             print thread_name
 
     @staticmethod
-    def calculate_fitness():
-        energy = ''
+    def calculate_fitness():        
         thread_name = current_thread().name    
 
         dockedpair = 'dockedpair_{0}.pdb'.format(thread_name)
@@ -158,10 +157,9 @@ class gmx():
                     raise Exception(p.returncode)
             str_energy = gmx.regexp_energy.search(err)            
             if str_energy:                                
-                final_energy = float(str_energy.group().split('=')[-1].strip())
-            final_energy = float(energy)
+                final_energy = float(str_energy.group().split('=')[-1].strip())                
         except ValueError:
-            print energy
+            print final_energy
         except Exception:
             e = sys.exc_info()[1]    
             print "Error: %s" % e

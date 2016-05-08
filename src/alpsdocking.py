@@ -37,19 +37,24 @@ if __name__ == '__main__':
     from Bio.PDB.PDBIO import Select
     from sys import stdout
     from time import sleep
+    from progressbar import ProgressBar, ReverseBar, ETA, Bar, Percentage    
 
     ligand_path, protein_path, cavities_path, itp_path, forcefield = argv[1:6]
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, forcefield,
                           10, 0.1, 0.8, 5, gen_limit, enhanced,
                           single_point, max_generations=33, n_layers=3)
+    widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
+    pbar = ProgressBar(widgets=widgets).start()  
     docking.start()
-    start = datetime.now()
+    start = datetime.now()  
     while docking.estimate_progress() < 1 - 1e-6:
-        stdout.write('\rprogreso:\t{0:04.2f} %'.
-                format(docking.estimate_progress() * 100))
-        stdout.flush()
-        sleep(2)
-    stdout.write('\n\n')
+        # stdout.write('\rprogreso:\t{0:04.2f} %'.
+        #         format(docking.estimate_progress() * 100))
+        # stdout.flush()
+        pbar.update(docking.estimate_progress() * 100)
+        #sleep(2)
+    #stdout.write('\n\n')
+    pbar.finish()
     docking.join()
     print 'tiempo:\t{0}\n'.format(datetime.now()-start)
     best = docking.layers[0].population[0]
