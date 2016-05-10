@@ -10,11 +10,12 @@ from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
 from math import pi, cos, sin
 from bisect import bisect
-from os import mkdir, path, remove
+from os import mkdir, path, remove,rename
 from tempfile import gettempdir
 from threading import current_thread
 from gmx import gmx
 import numpy as np
+from uuid import uuid4
 
 
 class Model0Select(Select):
@@ -32,7 +33,7 @@ class DockedPair(object):
         self.structure = main.original.copy()
         self.ligand = self.structure[0]['S']
         self.protein = self.structure[0]['P']
-        self.cavities = self.structure[1]['C']
+        self.cavities = self.structure[1]['C']                
         self.main = main
         self.decode(arr)
 
@@ -53,8 +54,8 @@ class DockedPair(object):
     def to_file(self, pdb_path, select=model0):
         out = PDBOut()
         out.set_structure(self.structure)
-        # if path.exists(pdb_path):
-        #     remove(pdb_path)
+        if path.exists(pdb_path):
+            rename(pdb_path,'{0}_score_{1}_{2}.pdb'.format(pdb_path.split('.')[0],self.main.last_score,uuid4()))        
         out.save(pdb_path, select) #, self.model0select)  
 
 
@@ -63,5 +64,5 @@ class DockedPair(object):
         pdb_path = path.join(pdb_path,
                              'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
-        return gmx.calculate_fitness()        
+        return gmx.calculate_fitness()                                 
 

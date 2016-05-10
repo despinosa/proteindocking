@@ -115,8 +115,6 @@ class DockingProblem(Thread):
                                          '{0}.pdb'.format(self.ligand_name))
         self.new_cavities_path = path.join(gmx.files_path,
                                            self.cavities_file)
-        # gmx.center_mol(self.protein_file)
-        # gmx.center_mol(self.cavities_file)
         gmx.center_mol(self.ligand_name)
         gmx.generate_protein_topology(self)               
         remove(self.new_protein_path)
@@ -126,6 +124,7 @@ class DockingProblem(Thread):
         gmx.process_folders(self)        
         environ['GMX_MAXBACKUP'] = '-1'
         chdir(gmx.gmx_path)
+        self.last_score = float('inf')
 
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
@@ -160,9 +159,10 @@ class DockingProblem(Thread):
         self.lower = sp.array((     0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
         self.upper = sp.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
 
-    def fitness(self, arr):
+    def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() # + pair.sqr_distance
+        self.last_score = pair.free_energy()
+        return self.last_score # + pair.sqr_distance        
 
     @abstractmethod
     def estimate_progress(self):

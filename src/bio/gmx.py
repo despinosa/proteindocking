@@ -23,7 +23,7 @@ class gmx():
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
     files_path = os.path.join(TEMPDIR, ROOT, FILES)      
 
-    regexp_energy = re.compile('Epot=*[ ]*[-]+[0-9.+e]{1,100}')
+    regexp_energy = re.compile('Epot=[ ]?[ -]?[\d]+[.]?[\d]+[eE]?[+-]?[\d]+')
 
     @staticmethod    
     def ioFile(ligand_name,forcefield_no):        
@@ -151,13 +151,13 @@ class gmx():
                                      universal_newlines=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
-                out,err = p.communicate()                
+                out,err = p.communicate()                              
                 i += 1                            
                 if p.returncode:                    
-                    raise Exception(p.returncode)
-            str_energy = gmx.regexp_energy.search(err)            
+                    raise Exception(p.returncode)               
+            str_energy = gmx.regexp_energy.search(err)                                  
             if str_energy:                                
-                final_energy = float(str_energy.group().split('=')[-1].strip())                
+                final_energy = float(str_energy.group().split('=')[-1].strip())                                
         except ValueError:
             print final_energy
         except Exception:
