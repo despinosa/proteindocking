@@ -27,7 +27,8 @@ class NonHOHSelect(Select):
 class DockingProblem(Thread):
     __metaclass__ = ABCMeta
 
-    def setup(self, ligand_path, protein_path, cavities_path,itp_path,forcefield):
+    def setup(self, ligand_path, protein_path, cavities_path, itp_path,
+              forcefield):
         def load_ligand(parser):
             ligand_model = parser.get_structure('ligand',
                                                 self.new_ligand_path)[0]
@@ -158,6 +159,7 @@ class DockingProblem(Thread):
         lise_max = self.lise_rltt.pop()
         self.lower = sp.array((     0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
         self.upper = sp.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
+        self.span = self.upper - self.lower
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)

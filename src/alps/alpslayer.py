@@ -85,6 +85,8 @@ class ALPSLayer(Thread):
         self.population = self.main.elitism(offspring, self.population)
         if self.next_layer is not None:
             self.redistribute()
+        try: self.main.best = min(self.main.best, self.population[0])
+        except IndexError: pass
         self.replaced.set()
 
 

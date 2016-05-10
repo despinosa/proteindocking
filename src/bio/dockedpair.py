@@ -45,11 +45,9 @@ class DockedPair(object):
                             shift * cos(arr[5])))
                   + cavity.coord)
         self.sqr_distance = sum(origin * origin)
-        rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
+        rotation = (rotaxis2m(arr[1], Vector(0, 0, 1)) *
+                    rotaxis2m(arr[2], Vector(0, 1, 0)))
         self.ligand.transform(rotation, origin)
-        in_place = np.array((0, 0, 0), 'f')
-        rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
-        self.ligand.transform(rotation, in_place)
 
     def to_file(self, pdb_path, select=model0):
         out = PDBOut()
@@ -57,7 +55,6 @@ class DockedPair(object):
         if path.exists(pdb_path):
             rename(pdb_path,'{0}_score_{1}_{2}.pdb'.format(pdb_path.split('.')[0],self.main.last_score,uuid4()))        
         out.save(pdb_path, select) #, self.model0select)  
-
 
     def free_energy(self):
         pdb_path = gmx.gmx_path   

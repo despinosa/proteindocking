@@ -18,7 +18,7 @@ class Chromosome(sp.ndarray):
                                 format(arr.size, main.lower.size))
         else:
             arr = sp_rand((main.lower.size,)).view(cls)
-            arr *= main.upper - main.lower
+            arr *= main.span
             arr += main.lower
         arr.main = main
         arr.birth = birth
@@ -29,23 +29,23 @@ class Chromosome(sp.ndarray):
         return arr
 
     def __lt__(self, other):
-        if self.score is None: self.score = self.fitness()
-        if other.score is None: other.score = other.fitness()
+        if self.score is None: self.eval_fitness()
+        if other.score is None: other.eval_fitness()
         return self.score < other.score
 
     def __le__(self, other):
-        if self.score is None: self.score = self.fitness()
-        if other.score is None: other.score = other.fitness()
+        if self.score is None: self.eval_fitness()
+        if other.score is None: other.eval_fitness()
         return self.score <= other.score
 
     def __gt__(self, other):
-        if self.score is None: self.score = self.fitness()
-        if other.score is None: other.score = other.fitness()
+        if self.score is None: self.eval_fitness()
+        if other.score is None: other.eval_fitness()
         return self.score > other.score
 
     def __ge__(self, other):
-        if self.score is None: self.score = self.fitness()
-        if other.score is None: other.score = other.fitness()
+        if self.score is None: self.eval_fitness()
+        if other.score is None: other.eval_fitness()
         return self.score >= other.score
 
     def __nonzero__(self):
@@ -66,8 +66,10 @@ class Chromosome(sp.ndarray):
         self.hash = getattr(obj, 'hash', None)
         self.lock = getattr(obj, 'lock', None)
 
-    def fitness(self):
-        with self.lock: return self.main.fitness(self)
+    def eval_fitness(self):
+        with self.lock:
+            self.score = self.main.fitness(self)
+        return self.score
 
     def mutate(self):
         idx = sp_randint(0, self.size)

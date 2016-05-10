@@ -3,6 +3,7 @@
 
 from abc import ABCMeta, abstractmethod
 from alpslayer import ALPSLayer
+from chromosome import Chromosome
 from definitions.agingscheme import linear
 
 class ALPS(object):
@@ -37,6 +38,8 @@ class ALPS(object):
             self.layers[i].prev_layer = self.layers[i-1]
         for i in xrange(len(self.layers)-1):
             self.layers[i].next_layer = self.layers[i+1]
+        self.best = Chromosome(self, 0)
+        self.best.eval_fitness()
 
     @abstractmethod
     def fitness(self, arr):
