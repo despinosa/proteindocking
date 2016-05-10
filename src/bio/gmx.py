@@ -7,6 +7,7 @@ import shlex
 import sys
 from tempfile import gettempdir
 from threading import current_thread
+from uuid import uuid4
 
 class gmx():
 
@@ -43,13 +44,14 @@ class gmx():
                         '#include "'+ligand_name+'.itp"\n')         
                 if '[ molecules ]' in line:
                     allowed = 1
-                if 'Protein' in line and allowed:
+                if 'protein' in line.lower() and allowed:
                     if i == len(buf) - 1:
                         line += ligand_name +' 1'
-                    elif '[' or ']' in line:                        
+                    elif '[' or ']' or '\n' in line[i+1]:                        
                         line += ligand_name +' 1'
                 newfile += line
-            out_file.write(newfile)       
+            out_file.write(newfile)      
+
     @staticmethod
     def center_mol(molecule):
         os.chdir(gmx.files_path)
@@ -152,12 +154,13 @@ class gmx():
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
                 out,err = p.communicate()                              
-                i += 1                            
+                i += 1                                         
                 if p.returncode:                    
-                    raise Exception(p.returncode)               
+                    raise Exception(p.returncode)  
             str_energy = gmx.regexp_energy.search(err)                                  
             if str_energy:                                
-                final_energy = float(str_energy.group().split('=')[-1].strip())                                
+                final_energy = float(str_energy.group().split('=')[-1].strip())    
+            os.rename(dockedpair,'{0}_score_{1}_{2}.pdb'.format(dockedpair.split('.')[0],final_energy,uuid4()))                                                
         except ValueError:
             print final_energy
         except Exception:

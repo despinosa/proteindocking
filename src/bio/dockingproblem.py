@@ -124,8 +124,7 @@ class DockingProblem(Thread):
         gmx.process_topology(self)
         gmx.process_folders(self)        
         environ['GMX_MAXBACKUP'] = '-1'
-        chdir(gmx.gmx_path)
-        self.last_score = float('inf')
+        chdir(gmx.gmx_path)        
 
         self.original = Structure('dockedpair')
         parser = PDBParser(PERMISSIVE=1)
@@ -163,8 +162,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        self.last_score = pair.free_energy()
-        return self.last_score # + pair.sqr_distance        
+        return pair.free_energy() # + pair.sqr_distance        
 
     @abstractmethod
     def estimate_progress(self):

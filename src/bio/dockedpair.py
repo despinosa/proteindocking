@@ -15,7 +15,6 @@ from tempfile import gettempdir
 from threading import current_thread
 from gmx import gmx
 import numpy as np
-from uuid import uuid4
 
 
 class Model0Select(Select):
@@ -51,9 +50,7 @@ class DockedPair(object):
 
     def to_file(self, pdb_path, select=model0):
         out = PDBOut()
-        out.set_structure(self.structure)
-        if path.exists(pdb_path):
-            rename(pdb_path,'{0}_score_{1}_{2}.pdb'.format(pdb_path.split('.')[0],self.main.last_score,uuid4()))        
+        out.set_structure(self.structure)        
         out.save(pdb_path, select) #, self.model0select)  
 
     def free_energy(self):
