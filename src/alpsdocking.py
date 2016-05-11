@@ -42,8 +42,8 @@ if __name__ == '__main__':
     ligand_path, protein_path, cavities_path, itp_path, forcefield = argv[1:6]
     limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path,
-                          forcefield, 15, 0.1, 0.8, 5, limited_conv, enhanced,
-                          single_point, max_generations=50, n_layers=3)
+                          forcefield, 15, 0.1, 0.8, 5, gen_limit, enhanced,
+                          single_point, max_generations=111, n_layers=10)
     widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
     pbar = ProgressBar(widgets=widgets).start()  
     docking.start()

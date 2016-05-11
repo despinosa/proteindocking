@@ -157,10 +157,12 @@ class gmx():
                 i += 1                                         
                 if p.returncode:                    
                     raise Exception(p.returncode)  
-            str_energy = gmx.regexp_energy.search(err)                                  
-            if str_energy:                                
+            str_energy = gmx.regexp_energy.search(err)
+            if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
-            os.rename(dockedpair,'{0}_score_{1}_{2}.pdb'.format(dockedpair.split('.')[0],final_energy,uuid4()))                                                
+            os.rename(dockedpair,
+                      '{0}_score_{1}_{2}.pdb'.format(dockedpair.split('.')[0],
+                                                     final_energy,uuid4()))
         except ValueError:
             print final_energy
         except Exception:
