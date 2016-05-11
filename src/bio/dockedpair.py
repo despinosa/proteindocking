@@ -34,6 +34,7 @@ class DockedPair(object):
         self.protein = self.structure[0]['P']
         self.cavities = self.structure[1]['C']                
         self.main = main
+        self.hash = arr.hash
         self.decode(arr)
 
     def decode(self, arr):
@@ -41,11 +42,13 @@ class DockedPair(object):
         shift = cavity.occupancy * arr[3]
         origin = (np.array((shift * cos(arr[4]) * sin(arr[5]),
                             shift * sin(arr[4]) * sin(arr[5]),
-                            shift * cos(arr[5])))
+                            shift * cos(arr[5])), 'f')
                   + cavity.coord)
         self.sqr_distance = sum(origin * origin)
-        rotation = (rotaxis2m(arr[1], Vector(0, 0, 1)) *
-                    rotaxis2m(arr[2], Vector(0, 1, 0)))
+        rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
+        self.ligand.transform(rotation, origin)
+        origin = np.array((0, 0, 0), 'f')
+        rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
         self.ligand.transform(rotation, origin)
 
     def to_file(self, pdb_path, select=model0):
@@ -58,5 +61,5 @@ class DockedPair(object):
         pdb_path = path.join(pdb_path,
                              'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
-        return gmx.calculate_fitness()                                 
+        return gmx.calculate_fitness(self.main.generation, self.hash)                                 
 

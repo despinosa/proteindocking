@@ -147,8 +147,8 @@ class DockingProblem(Thread):
 
         arr[0]  ~   Valor del tiro de la _ruleta_ de cavidades.
         arr[1:2]~   Ángulos de rotación del ligando.
-        arr[3]  ~   Desfase respecto al centro de la cavidad.
-        arr[4:5]~   Ángulos de traslación del desfase.
+        arr[3:5]~   Desfase del ligando en coordenadas esféricas respecto
+                    del centro de la cavidad.
 
         """
 

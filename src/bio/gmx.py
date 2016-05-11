@@ -136,7 +136,7 @@ class gmx():
             print thread_name
 
     @staticmethod
-    def calculate_fitness():        
+    def calculate_fitness(generation, hash_):        
         thread_name = current_thread().name    
 
         dockedpair = 'dockedpair_{0}.pdb'.format(thread_name)
@@ -161,8 +161,8 @@ class gmx():
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
             os.rename(dockedpair,
-                      '{0}_score_{1}_{2}.pdb'.format(dockedpair.split('.')[0],
-                                                     final_energy,uuid4()))
+                      '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],
+                                                   generation,final_energy,hash_))
         except ValueError:
             print final_energy
         except Exception:
