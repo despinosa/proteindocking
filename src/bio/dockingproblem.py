@@ -90,7 +90,7 @@ class DockingProblem(Thread):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
             comment = r'\s*;'
             id_ = r'\s*(\w+)'
-            not_found = ValueError('no se encuentra el identificador en {}'.
+            not_found = ValueError('no se encuentra el identificador en {0}'.
                                        format(itp_file.name))
             for line in itp_file:
                 if match(moltype, line.lower()): break
