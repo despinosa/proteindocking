@@ -8,17 +8,18 @@ import sys
 from tempfile import gettempdir
 from threading import current_thread
 from uuid import uuid4
+from datetime import datetime
 
 class gmx():
 
-    TEMPDIR = gettempdir()
-    ROOT = 'proteindocking'
+    TEMPDIR = gettempdir()        
+    ROOT = 'proteindocking_{0}'.format(datetime.now().strftime('%Y%m%d%H%M%S%f'))
     FILES = 'files'
     TMP = 'tmp'
     GMX_FILES = 'gmx_files'    
-
-    em_file = 'em.mdp'            
-    forcefields = {1:'charmm27',2:'gromos54a7_atb'}
+    em_file = 'em.mdp'                
+    CHARMM27, GROMOS54A7 = range(2)
+    forcefields = {0:'charmm27',1:'gromos54a7_atb'}
     topol_with_ligand_file = 'topol_with_ligand.top'   
 
     gmx_path = os.path.join(TEMPDIR, ROOT, TMP)        
@@ -31,26 +32,26 @@ class gmx():
         with open(gmx.topol_with_ligand_file,'r') as in_file:
             buf = in_file.readlines()
         with open(gmx.topol_with_ligand_file,'w') as out_file:    
-            allowed = 0
+            allowed = 0              
             newfile = ''
-            for i,line in enumerate(buf):                    
-                if forcefield_no == 1:        
-                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:
-                        line += '#include "'+ligand_name+'.itp"\n'
-                elif forcefield_no == 2:
-                    if '#include "'+gmx.forcefields[forcefield_no]+'.ff/forcefield.itp"' in line:     
-                        line += ('#include "'+gmx.forcefields[forcefield_no]+'.ff/spc.itp"\n'
-                        '#include "'+gmx.forcefields[forcefield_no]+'.ff/ions.itp"\n'
-                        '#include "'+ligand_name+'.itp"\n')         
+            for i,line in enumerate(buf):                                    
+                if forcefield_no == gmx.CHARMM27:        
+                    if '#include "{0}.ff/forcefield.itp"'.format(gmx.forcefields[forcefield_no]) in line:
+                        line += '#include "{0}.itp"\n'.format(ligand_name)                    
+                elif forcefield_no == gmx.GROMOS54A7:                         
+                    if '#include "./{0}.ff/forcefield.itp"'.format(gmx.forcefields[forcefield_no]) in line:                                                                                                                         
+                        line += '#include "./{0}.ff/spc.itp"\n'.format(gmx.forcefields[forcefield_no])
+                        line += '#include "./{0}.ff/ions.itp"\n'.format(gmx.forcefields[forcefield_no])
+                        line += '#include "./{0}.itp"\n'.format(ligand_name)                        
                 if '[ molecules ]' in line:
                     allowed = 1
                 if 'protein' in line.lower() and allowed:
                     if i == len(buf) - 1:
                         line += ligand_name +' 1'
                     elif '[' or ']' or '\n' in line[i+1]:                        
-                        line += ligand_name +' 1'
-                newfile += line
-            out_file.write(newfile)      
+                        line += ligand_name +' 1'                                
+                newfile += line                
+            out_file.write(newfile)       
 
     @staticmethod
     def center_mol(molecule):
@@ -69,19 +70,19 @@ class gmx():
     def process_topology(dp_object):
         os.chdir(gmx.files_path)
         if not os.path.isfile('topol.top'):
-            raise OSError('Checar GMX')
+            raise OSError('Checar GMX: No se genero el archivo de topologia de la proteina')
         shutil.copyfile('topol.top',gmx.topol_with_ligand_file)
         gmx.ioFile(dp_object.ligand_name,dp_object.forcefield)
 
     @staticmethod
     def generate_protein_topology(dp_object):                        
-        os.chdir(gmx.files_path)
+        os.chdir(gmx.files_path)        
         cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none -missing".
                                 format(dp_object.protein_file,gmx.forcefields[dp_object.forcefield]))
         try:
             p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()            
+            out,err = p.communicate()                        
         except Exception:
             e = sys.exc_info()[1]
             print "Error: %s" % e
@@ -112,6 +113,7 @@ class gmx():
         except Exception:
             e = sys.exc_info()[1]                
             print "Error: %s" % e    
+            
     @staticmethod
     def delete_files_in_path(dirPath):
         fileList = os.listdir(dirPath)
@@ -122,21 +124,19 @@ class gmx():
     def process_folders(dp_object):    
         try:        
             thread_name = current_thread().name                                            
-            
             shutil.copy(os.path.join(gmx.files_path, dp_object.protein_file), gmx.gmx_path)        
             shutil.copy(os.path.join(gmx.files_path, '{0}.itp'.format(dp_object.ligand_name)), gmx.gmx_path)
             shutil.copy(os.path.join(gmx.files_path, '{0}.pdb'.format(dp_object.ligand_name)), gmx.gmx_path)
             shutil.copy(os.path.join(gmx.files_path, gmx.em_file), gmx.gmx_path)
             shutil.copy(os.path.join(gmx.files_path, gmx.topol_with_ligand_file), gmx.gmx_path)                
             shutil.copy(os.path.join(gmx.files_path, 'conf.gro'), gmx.gmx_path)                
-
         except Exception:
             e = sys.exc_info()[1]                
             print "Error: %s" % e
             print thread_name
 
     @staticmethod
-    def calculate_fitness(generation, hash_):        
+    def calculate_fitness(generation,hash_):        
         thread_name = current_thread().name    
 
         dockedpair = 'dockedpair_{0}.pdb'.format(thread_name)
@@ -160,11 +160,11 @@ class gmx():
             str_energy = gmx.regexp_energy.search(err)
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
-            os.rename(dockedpair,
-                      '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],
-                                                   generation,final_energy,hash_))
+            new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
+            if not os.path.isfile(new_name):
+                os.rename(dockedpair,new_name)
         except ValueError:
-            print final_energy
+            print str_energy.group()        
         except Exception:
             e = sys.exc_info()[1]    
             print "Error: %s" % e

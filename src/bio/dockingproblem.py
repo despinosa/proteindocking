@@ -13,7 +13,7 @@ from gmx import gmx
 from math import pi
 from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
 from re import match, search
-from shutil import rmtree, copy
+from shutil import rmtree, copy, copytree
 from threading import Thread
 import numpy as np
 
@@ -85,6 +85,9 @@ class DockingProblem(Thread):
             copy(cavities_path, gmx.files_path)
             copy(path.join('files', gmx.em_file),
                  gmx.files_path)
+            if(self.forcefield == gmx.GROMOS54A7):
+                copytree(path.join('files','gromos54a7_atb.ff'),path.join(gmx.files_path,'gromos54a7_atb.ff'))
+                copytree(path.join('files','gromos54a7_atb.ff'),path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
 
         def id_from_itp(itp_file):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'

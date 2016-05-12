@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from alps.alps import ALPS
 from bio.dockingproblem import DockingProblem
 from alps.definitions.agingscheme import linear
+
 
 class ALPSDocking(DockingProblem, ALPS):
     def __init__(self, ligand_path, protein_path, cavities_path, itp_path,
@@ -27,9 +27,10 @@ class ALPSDocking(DockingProblem, ALPS):
     run = solve
 
 
-def run_pbar(docking):
+def run_pbar(docking, output_path):
     from datetime import datetime
-    from progressbar import ProgressBar, ReverseBar, ETA, Bar, Percentage    
+    from progressbar import ProgressBar, ReverseBar, ETA, Bar, Percentage     
+    from os import path   
     widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
     pbar = ProgressBar(widgets=widgets).start()  
     docking.start()
@@ -38,15 +39,18 @@ def run_pbar(docking):
         pbar.update(docking.estimate_progress() * 100)
     pbar.finish()
     docking.join()
-    print 'tiempo:\t{0}\n'.format(datetime.now()-start)
+    out_file = open(path.join(output_path,'out'),'w+')
+    out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
     pair = DockedPair(docking, docking.best)
-    pair.to_file('best_{0}.pdb'.format(docking.best.hash), Select())
-    print 'mejor:\t{0}\n\n'.format(docking.best)
+    pair.to_file(path.join(output_path,'best_{0}_{1}.pdb'.format(docking.protein_file.split('.')[0],docking.ligand_name)), Select())
+    out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+    out_file.close()
 
-def run_stdout(docking):
+def run_stdout(docking, output_path):
     from datetime import datetime
     from sys import stdout
-    from time import sleep
+    from time import sleep    
+    from os import path
     docking.start()
     start = datetime.now()  
     while docking.estimate_progress() < 1 - 1e-15:
@@ -56,16 +60,25 @@ def run_stdout(docking):
         sleep(2)
     stdout.write('\n\n')
     docking.join()
-    print 'tiempo:\t{0}\n'.format(datetime.now()-start)
+    out_file = open(path.join(output_path,'out'),'w+')
+    out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
     pair = DockedPair(docking, docking.best)
-    pair.to_file('best_{0}.pdb'.format(docking.best.hash), Select())
-    print 'mejor:\t{0}\n\n'.format(docking.best)
+    pair.to_file(path.join(output_path,'best_{0}_{1}.pdb'.format(docking.protein_file.split('.')[0],docking.ligand_name)), Select())
+    out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+    out_file.close()
 
-def run_silent(docking):
+def run_silent(docking, output_path):
+    from datetime import datetime    
+    from os import path
     docking.start()
+    start = datetime.now()  
     docking.join()
+    out_file = open(path.join(output_path,'out'),'w+')
+    out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
     pair = DockedPair(docking, docking.best)
-    pair.to_file('best_{0}.pdb'.format(docking.best.hash), Select())
+    pair.to_file(path.join(output_path,'best_{0}_{1}.pdb'.format(docking.protein_file.split('.')[0],docking.ligand_name)), Select())
+    out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+    out_file.close()
 
 if __name__ == '__main__':
     from sys import argv
@@ -73,12 +86,11 @@ if __name__ == '__main__':
     from alps.definitions.selection import enhanced
     from alps.definitions.stopcondition import conv_test, gen_limit
     from bio.dockedpair import DockedPair
-    from Bio.PDB.PDBIO import Select
+    from Bio.PDB.PDBIO import Select    
 
-    ligand_path, protein_path, cavities_path, itp_path, forcefield = argv[1:6]
-    limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
+    ligand_path, protein_path, cavities_path, itp_path, forcefield, output_path = argv[1:7]
+    #limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path,
-                          forcefield, 50, 0.1, 0.8, 5, gen_limit, enhanced,
-                          single_point, max_generations=10, n_layers=2)
-    run_pbar(docking)
-
+                          forcefield, 10, 0.1, 0.8, 5, gen_limit, enhanced,
+                          single_point, max_generations=5, n_layers=5)
+    run_silent(docking, output_path)

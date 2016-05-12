@@ -61,5 +61,5 @@ class DockedPair(object):
         pdb_path = path.join(pdb_path,
                              'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
-        return gmx.calculate_fitness(self.main.generation, self.hash)                                 
+        return gmx.calculate_fitness(self.main.generation,self.hash)                                 
 
