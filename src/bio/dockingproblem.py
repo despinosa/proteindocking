@@ -29,65 +29,66 @@ class DockingProblem(Thread):
 
     def setup(self, ligand_path, protein_path, cavities_path, itp_path,
               forcefield):
-        def load_ligand(parser):
-            ligand_model = parser.get_structure('ligand',
-                                                self.new_ligand_path)[0]
-            if len(ligand_model) != 1:
-                raise ValueError(('el ligando ({0}) no puede tener más de una '
-                                  'cadena').format(self.new_ligand_path))
-            ligand_chain = ligand_model.child_list[0]
-            ligand_chain.id = 'S'
-            return ligand_chain
-
-        def load_protein(parser):
+        def load_data():
+            parser = PDBParser(PERMISSIVE=1)
             protein_struct = parser.get_structure('protein',
-                                                  self.new_protein_path)
+                                                  self.protein_path)
             out = PDBOut()
             out.set_structure(protein_struct)
-            out.save(self.new_protein_path, NonHOHSelect())
-            protein_struct = parser.get_structure('protein',
-                                                  self.new_protein_path)
-            protein_model = protein_struct[0]
-            if len(protein_model) != 1:
-                raise ValueError(('la proteína ({0}) no puede tener más de una'
-                                  ' cadena').format(self.new_protein_path))
-            protein_chain = protein_model.child_list[0]
-            protein_chain.id = 'P'
-            return protein_chain
-
-        def load_cavities(parser):
+            out.save(self.protein_path, NonHOHSelect())
+            self.protein_model = parser.get_structure('protein',
+                                                  self.protein_path)[0]
+            ligand_model = parser.get_structure('ligand',
+                                                self.ligand_path)[0]
+            if len(ligand_model) != 1:
+                raise ValueError(('el ligando ({0}) no puede tener más de una '
+                                  'cadena').format(self.ligand_path))
+            self.ligand_chain = ligand_model.child_list[0]
+            self.ligand_chain.id = 'Z'
             cavities_model = parser.get_structure('cavities',
-                                                  self.new_cavities_path)[0]
+                                                  self.cavities_path)[0]
             if len(cavities_model) != 1:
                 raise ValueError(('las cavidades ({0}) deben estar en una sola'
-                                  ' cadena').format(self.new_cavities_path))
-            cavities_chain = cavities_model.child_list[0]
-            for residue in cavities_chain.copy():
-                cavities_chain.detach_child(residue.id)
+                                  ' cadena').format(self.cavities_path))
+            self.cavities_chain = cavities_model.child_list[0]
+            for residue in self.cavities_chain.copy():
+                self.cavities_chain.detach_child(residue.id)
                 residue.id = (' ', residue.id[1], ' ')
-                cavities_chain.add(residue)
-            cavities_chain.id = 'C'
-            return cavities_chain
+                self.cavities_chain.add(residue)
+            self.cavities_chain.id = 'C'
 
-        def load_folders():            
+            self.original = Structure('dockedpair')
+            self.original.add(self.protein_model)
+            self.original[0].add(self.ligand_chain)
+            self.original.add(Model(1))
+            self.original[1].add(self.cavities_chain)
+
+        def prepare_wdtree():
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
-                rmtree(path.join(gmx.TEMPDIR,gmx.ROOT),ignore_errors=True)
+                rmtree(path.join(gmx.TEMPDIR,gmx.ROOT), ignore_errors=True)
             mkdir(path.join(gmx.TEMPDIR,gmx.ROOT))
             mkdir(gmx.files_path)
             mkdir(gmx.gmx_path)
 
-        def load_files():                                    
+        def prepare_wdfiles():                                    
             copy(ligand_path, path.join(gmx.files_path,
-                                        self.ligand_name+'.pdb'))
+                                        '{}.pdb'.format(self.ligand_id)))
             copy(itp_path, path.join(gmx.files_path,
-                                        self.ligand_name+'.itp'))
+                                     '{}.itp'.format(self.ligand_id)))
             copy(protein_path, gmx.files_path)
             copy(cavities_path, gmx.files_path)
             copy(path.join('files', gmx.em_file),
                  gmx.files_path)
             if(self.forcefield == gmx.GROMOS54A7):
-                copytree(path.join('files','gromos54a7_atb.ff'),path.join(gmx.files_path,'gromos54a7_atb.ff'))
-                copytree(path.join('files','gromos54a7_atb.ff'),path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
+                copytree(path.join('files', 'gromos54a7_atb.ff'),
+                         path.join(gmx.files_path,'gromos54a7_atb.ff'))
+                copytree(path.join('files', 'gromos54a7_atb.ff'),
+                         path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
+            self.protein_path = path.join(gmx.files_path, self.protein_filename)
+            self.ligand_path = path.join(gmx.files_path,
+                                         '{0}.pdb'.format(self.ligand_id))
+            self.cavities_path = path.join(gmx.files_path,
+                                           self.cavities_filename)
 
         def id_from_itp(itp_file):
             moltype = r'\s*\[\s*(moleculetype|moltype)\s*\]'
@@ -106,39 +107,23 @@ class DockingProblem(Thread):
             except AttributeError:
                 raise not_found
 
-        load_folders()
-        self.protein_file = path.split(protein_path)[-1]
+        prepare_wdtree()
+        self.protein_filename = path.split(protein_path)[-1]
         with open(itp_path, 'r') as itp_file:
-            self.ligand_name = id_from_itp(itp_file)
-        self.cavities_file = path.split(cavities_path)[-1]
-        self.forcefield = int(forcefield)
-        load_files()
-        self.new_protein_path = path.join(gmx.files_path,
-                                          self.protein_file)
-        self.new_ligand_path = path.join(gmx.files_path,
-                                         '{0}.pdb'.format(self.ligand_name))
-        self.new_cavities_path = path.join(gmx.files_path,
-                                           self.cavities_file)
-        gmx.center_mol(self.ligand_name)
+            self.ligand_id = id_from_itp(itp_file)
+        self.cavities_filename = path.split(cavities_path)[-1]
+        self.forcefield = forcefield
+        prepare_wdfiles()
+        gmx.center_mol(self.ligand_id)
         gmx.generate_protein_topology(self)               
-        remove(self.new_protein_path)
+        remove(self.protein_path)
         gmx.add_hydrogens(self)
         gmx.generate_protein_topology(self)
         gmx.process_topology(self)
         gmx.process_folders(self)        
         environ['GMX_MAXBACKUP'] = '-1'
-        chdir(gmx.gmx_path)        
-
-        self.original = Structure('dockedpair')
-        parser = PDBParser(PERMISSIVE=1)
-        self.original.add(Model(0))
-        self.protein = load_protein(parser)
-        self.original[0].add(self.protein)
-        self.ligand = load_ligand(parser)
-        self.original[0].add(self.ligand)
-        self.original.add(Model(1))
-        self.cavities = load_cavities(parser)
-        self.original[1].add(self.cavities)
+        chdir(gmx.gmx_path)
+        load_data()
         self.encode()
 
     def encode(self):
@@ -155,7 +140,7 @@ class DockingProblem(Thread):
 
         """
 
-        self.lise_rltt = map(lambda cav: cav['R'].bfactor, self.cavities)
+        self.lise_rltt = map(lambda cav: cav['R'].bfactor, self.cavities_chain)
         for i in xrange(1, len(self.lise_rltt)):
             self.lise_rltt[i] += self.lise_rltt[i-1]
         lise_max = self.lise_rltt.pop()

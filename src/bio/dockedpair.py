@@ -30,15 +30,14 @@ class DockedPair(object):
     def __init__(self, main, arr):
         super(DockedPair, self).__init__()
         self.structure = main.original.copy()
-        self.ligand = self.structure[0]['S']
-        self.protein = self.structure[0]['P']
-        self.cavities = self.structure[1]['C']                
+        self.ligand_chain = self.structure[0]['Z']
+        self.cavities_chain = self.structure[1]['C']
         self.main = main
         self.hash = arr.hash
         self.decode(arr)
 
     def decode(self, arr):
-        cavity = self.cavities[bisect(self.main.lise_rltt, arr[0])]['R']
+        cavity = self.cavities_chain[bisect(self.main.lise_rltt, arr[0])]['R']
         shift = cavity.occupancy * arr[3]
         origin = (np.array((shift * cos(arr[4]) * sin(arr[5]),
                             shift * sin(arr[4]) * sin(arr[5]),
@@ -46,10 +45,10 @@ class DockedPair(object):
                   + cavity.coord)
         self.sqr_distance = sum(origin * origin)
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
-        self.ligand.transform(rotation, origin)
+        self.ligand_chain.transform(rotation, origin)
         origin = np.array((0, 0, 0), 'f')
         rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
-        self.ligand.transform(rotation, origin)
+        self.ligand_chain.transform(rotation, origin)
 
     def to_file(self, pdb_path, select=model0):
         out = PDBOut()
@@ -57,9 +56,8 @@ class DockedPair(object):
         out.save(pdb_path, select) #, self.model0select)  
 
     def free_energy(self):
-        pdb_path = gmx.gmx_path   
-        pdb_path = path.join(pdb_path,
+        pdb_path = path.join(gmx.gmx_path,
                              'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
-        return gmx.calculate_fitness(self.main.generation,self.hash)                                 
+        return gmx.calculate_fitness(self.main.generation, self.hash)
 

@@ -1,10 +1,12 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta, abstractmethod
 from alpslayer import ALPSLayer
 from chromosome import Chromosome
 from definitions.agingscheme import linear
+from definitions.crossover import single_point
+
 
 class ALPS(object):
     __metaclass__ = ABCMeta
@@ -16,8 +18,8 @@ class ALPS(object):
         self.__class__.instances += 1
 
     def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
-              stop_condition, elitism, crossover, n_parents=2,
-              max_generations=50, aging_scheme=linear, n_layers=5):
+              stop_condition, elitism, aging_scheme, crossover=single_point,
+              n_parents=2, max_generations=50, n_layers=5):
         self.name = '{0}{1}'.format(self.__class__.__name__.lower(),
                                     self.instances)
         self.pop_size = pop_size
@@ -31,7 +33,7 @@ class ALPS(object):
         self.n_parents = n_parents
         self.max_generations = max_generations
         self.generation = 0
-        age_limits = aging_scheme(10)
+        age_limits = aging_scheme()
         self.layers = [ALPSLayer(self, i, age_limits.next())
                        for i in xrange(n_layers)]
         for i in xrange(1, len(self.layers)):

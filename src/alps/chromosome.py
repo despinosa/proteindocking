@@ -55,9 +55,9 @@ class Chromosome(np.ndarray):
         return self.hash == other.hash
 
     def __str__(self):
-        return "score={0:3f}, birth={1}, hash={2} {3}".format(self.score, self.birth, self.hash,
-                                                     super(Chromosome, self).
-                                                             __str__())
+        return ('score={0:3f}, birth={1}, hash={2} '
+                '{3}').format(self.score, self.birth, self.hash,
+                              super(Chromosome, self).__str__())
 
     def __array_finalize__(self, obj):
         if obj is None: return

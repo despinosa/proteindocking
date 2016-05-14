@@ -28,7 +28,7 @@ class gmx():
     regexp_energy = re.compile('Epot=[ ]?[ -]?[\d]+[.]?[\d]+[eE]?[+-]?[\d]+')
 
     @staticmethod    
-    def ioFile(ligand_name,forcefield_no):        
+    def ioFile(ligand_id,forcefield_no):        
         with open(gmx.topol_with_ligand_file,'r') as in_file:
             buf = in_file.readlines()
         with open(gmx.topol_with_ligand_file,'w') as out_file:    
@@ -37,19 +37,19 @@ class gmx():
             for i,line in enumerate(buf):                                    
                 if forcefield_no == gmx.CHARMM27:        
                     if '#include "{0}.ff/forcefield.itp"'.format(gmx.forcefields[forcefield_no]) in line:
-                        line += '#include "{0}.itp"\n'.format(ligand_name)                    
+                        line += '#include "{0}.itp"\n'.format(ligand_id)                    
                 elif forcefield_no == gmx.GROMOS54A7:                         
                     if '#include "./{0}.ff/forcefield.itp"'.format(gmx.forcefields[forcefield_no]) in line:                                                                                                                         
                         line += '#include "./{0}.ff/spc.itp"\n'.format(gmx.forcefields[forcefield_no])
                         line += '#include "./{0}.ff/ions.itp"\n'.format(gmx.forcefields[forcefield_no])
-                        line += '#include "./{0}.itp"\n'.format(ligand_name)                        
+                        line += '#include "./{0}.itp"\n'.format(ligand_id)                        
                 if '[ molecules ]' in line:
                     allowed = 1
                 if 'protein' in line.lower() and allowed:
                     if i == len(buf) - 1:
-                        line += ligand_name +' 1'
+                        line += ligand_id +' 1'
                     elif '[' or ']' or '\n' in line[i+1]:                        
-                        line += ligand_name +' 1'                                
+                        line += ligand_id +' 1'                                
                 newfile += line                
             out_file.write(newfile)       
 
@@ -72,13 +72,13 @@ class gmx():
         if not os.path.isfile('topol.top'):
             raise OSError('Checar GMX: No se genero el archivo de topologia de la proteina')
         shutil.copyfile('topol.top',gmx.topol_with_ligand_file)
-        gmx.ioFile(dp_object.ligand_name,dp_object.forcefield)
+        gmx.ioFile(dp_object.ligand_id,dp_object.forcefield)
 
     @staticmethod
     def generate_protein_topology(dp_object):                        
         os.chdir(gmx.files_path)        
         cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none -missing".
-                                format(dp_object.protein_file,gmx.forcefields[dp_object.forcefield]))
+                                format(dp_object.protein_filename,gmx.forcefields[dp_object.forcefield]))
         try:
             p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -93,12 +93,12 @@ class gmx():
         cmd_hydrogens = [("gmx grompp -f {0} -o em_aux.tpr -c conf.gro".
                           format(gmx.em_file)),
                          ("gmx trjconv -f conf.gro -o {0} -s em_aux.tpr".
-                          format(dp_object.protein_file))]
+                          format(dp_object.protein_filename))]
         try:
             n = len(cmd_hydrogens)
             i = 0
             args = None
-            if not (os.path.isfile('conf.gro') or os.path.isfile(dp_object.protein_file)):
+            if not (os.path.isfile('conf.gro') or os.path.isfile(dp_object.protein_filename)):
                 raise OSError('Checar GMX')
             while(i<n):
                 if i:
@@ -124,9 +124,9 @@ class gmx():
     def process_folders(dp_object):    
         try:        
             thread_name = current_thread().name                                            
-            shutil.copy(os.path.join(gmx.files_path, dp_object.protein_file), gmx.gmx_path)        
-            shutil.copy(os.path.join(gmx.files_path, '{0}.itp'.format(dp_object.ligand_name)), gmx.gmx_path)
-            shutil.copy(os.path.join(gmx.files_path, '{0}.pdb'.format(dp_object.ligand_name)), gmx.gmx_path)
+            shutil.copy(os.path.join(gmx.files_path, dp_object.protein_filename), gmx.gmx_path)        
+            shutil.copy(os.path.join(gmx.files_path, '{0}.itp'.format(dp_object.ligand_id)), gmx.gmx_path)
+            shutil.copy(os.path.join(gmx.files_path, '{0}.pdb'.format(dp_object.ligand_id)), gmx.gmx_path)
             shutil.copy(os.path.join(gmx.files_path, gmx.em_file), gmx.gmx_path)
             shutil.copy(os.path.join(gmx.files_path, gmx.topol_with_ligand_file), gmx.gmx_path)                
             shutil.copy(os.path.join(gmx.files_path, 'conf.gro'), gmx.gmx_path)                
