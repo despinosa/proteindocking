@@ -72,9 +72,9 @@ class DockingProblem(Thread):
 
         def prepare_wdfiles():                                    
             copy(ligand_path, path.join(gmx.files_path,
-                                        '{}.pdb'.format(self.ligand_id)))
+                                        '{0}.pdb'.format(self.ligand_id)))
             copy(itp_path, path.join(gmx.files_path,
-                                     '{}.itp'.format(self.ligand_id)))
+                                     '{0}.itp'.format(self.ligand_id)))
             copy(protein_path, gmx.files_path)
             copy(cavities_path, gmx.files_path)
             copy(path.join('files', gmx.em_file),
