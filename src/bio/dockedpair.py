@@ -10,7 +10,7 @@ from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
 from math import pi, cos, sin
 from bisect import bisect
-from os import mkdir, path, remove,rename
+from os import mkdir, path, remove ,rename
 from tempfile import gettempdir
 from threading import current_thread
 from gmx import gmx
@@ -25,7 +25,6 @@ class Model0Select(Select):
 class DockedPair(object):
     """docstring for DockedPair"""
     model0 = Model0Select()
-    all_ = Select()
 
     def __init__(self, main, arr):
         super(DockedPair, self).__init__()
@@ -43,7 +42,6 @@ class DockedPair(object):
                             shift * sin(arr[4]) * sin(arr[5]),
                             shift * cos(arr[5])), 'f')
                   + cavity.coord)
-        self.sqr_distance = sum(origin * origin)
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
         self.ligand_chain.transform(rotation, origin)
         origin = np.array((0, 0, 0), 'f')

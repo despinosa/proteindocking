@@ -104,6 +104,6 @@ if __name__ == '__main__':
     fibo3 = lambda: fibonacci(3)
     # limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path,
-                          forcefield, 21, 0.1, 0.8, 4, gen_limit, enhanced,
-                          fibo3, max_generations=50, n_layers=5)
+                          forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
+                          fibo3, max_generations=48, n_layers=5)
     _run_pbar(docking, output_path)

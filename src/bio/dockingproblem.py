@@ -10,7 +10,7 @@ from Bio.PDB.Structure import Structure
 from collections import namedtuple
 from dockedpair import DockedPair
 from gmx import gmx
-from math import pi
+from math import exp, pi
 from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
 from re import match, search
 from shutil import rmtree, copy, copytree
@@ -115,7 +115,7 @@ class DockingProblem(Thread):
         self.forcefield = forcefield
         prepare_wdfiles()
         gmx.center_mol(self.ligand_id)
-        gmx.generate_protein_topology(self)               
+        gmx.generate_protein_topology(self)
         remove(self.protein_path)
         gmx.add_hydrogens(self)
         gmx.generate_protein_topology(self)
@@ -140,7 +140,8 @@ class DockingProblem(Thread):
 
         """
 
-        self.lise_rltt = map(lambda cav: cav['R'].bfactor, self.cavities_chain)
+        self.lise_rltt = map(lambda cav: exp(cav['R'].bfactor),
+                             self.cavities_chain)
         for i in xrange(1, len(self.lise_rltt)):
             self.lise_rltt[i] += self.lise_rltt[i-1]
         lise_max = self.lise_rltt.pop()
@@ -150,7 +151,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() # + pair.sqr_distance        
+        return pair.free_energy()
 
     @abstractmethod
     def estimate_progress(self):
