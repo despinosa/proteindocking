@@ -31,7 +31,8 @@ class ALPSDocking(DockingProblem, ALPS):
 def _run_pbar(docking, output_path):
     from datetime import datetime
     from progressbar import ProgressBar, ReverseBar, ETA, Bar, Percentage     
-    from os import path   
+    from os import path 
+    from shutil import copy
     widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
     pbar = ProgressBar(widgets=widgets).start()  
     docking.start()
@@ -50,13 +51,14 @@ def _run_pbar(docking, output_path):
     out_file.write('mejor:\t{0}\n\n'.format(docking.best))
     out_file.close()
 
-def _run_stdout(docking, output_path):
+def _run_stdout(docking, output_path,parent):    
     from datetime import datetime
     from sys import stdout
     from time import sleep    
-    from os import path
+    from os import path    
+
     docking.start()
-    start = datetime.now()  
+    start = datetime.now()              
     while docking.estimate_progress() < 1 - 1e-15:
         stdout.write('\rprogreso:\t{0:04.2f} %'.
             format(docking.estimate_progress() * 100))
@@ -74,6 +76,7 @@ def _run_stdout(docking, output_path):
     out_file.write('mejor:\t{0}\n\n'.format(docking.best))
     out_file.close()
 
+
 def _run_silent(docking, output_path):
     from datetime import datetime    
     from os import path
@@ -89,6 +92,7 @@ def _run_silent(docking, output_path):
                  Select())
     out_file.write('mejor:\t{0}\n\n'.format(docking.best))
     out_file.close()
+
 
 if __name__ == '__main__':
     from sys import argv

@@ -76,13 +76,13 @@ class DockingProblem(Thread):
             copy(itp_path, path.join(gmx.files_path,
                                      '{0}.itp'.format(self.ligand_id)))
             copy(protein_path, gmx.files_path)
-            copy(cavities_path, gmx.files_path)
-            copy(path.join('files', gmx.em_file),
+            copy(cavities_path, gmx.files_path)                        
+            copy(path.join('..','files', gmx.em_file),
                  gmx.files_path)
             if(self.forcefield == gmx.GROMOS54A7):
-                copytree(path.join('files', 'gromos54a7_atb.ff'),
+                copytree(path.join('..','files', 'gromos54a7_atb.ff'),
                          path.join(gmx.files_path,'gromos54a7_atb.ff'))
-                copytree(path.join('files', 'gromos54a7_atb.ff'),
+                copytree(path.join('..','files', 'gromos54a7_atb.ff'),
                          path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
             self.protein_path = path.join(gmx.files_path, self.protein_filename)
             self.ligand_path = path.join(gmx.files_path,

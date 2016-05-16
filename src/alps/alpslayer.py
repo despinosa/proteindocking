@@ -47,7 +47,6 @@ class ALPSLayer(Thread):
                     i += 1
             del self.population[self.main.pop_size:] # trim
 
-
     def iterate(self):
         def reproduce(pool):
             offspring = []
@@ -88,7 +87,6 @@ class ALPSLayer(Thread):
         try: self.main.best = min(self.main.best, self.population[0])
         except IndexError: pass
         self.replaced.set()
-
 
     def run(self):
         if self.prev_layer is None:

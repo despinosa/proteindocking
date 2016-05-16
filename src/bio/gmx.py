@@ -160,9 +160,9 @@ class gmx():
             str_energy = gmx.regexp_energy.search(err)
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
-            new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
-            if not os.path.isfile(new_name):
-                os.rename(dockedpair,new_name)
+            # new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
+            # if not os.path.isfile(new_name):
+            #     os.rename(dockedpair,new_name)
         except ValueError:
             print str_energy.group()        
         except Exception:
