@@ -8,7 +8,7 @@ from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Structure import Structure
 from Bio.PDB.Vector import rotaxis2m, rotmat, Vector
 from collections import namedtuple
-from math import pi, cos, sin
+from math import pi, cos, sin, exp
 from bisect import bisect
 from os import mkdir, path, remove ,rename
 from tempfile import gettempdir
@@ -36,12 +36,13 @@ class DockedPair(object):
         self.decode(arr)
 
     def decode(self, arr):
-        cavity = self.cavities_chain[bisect(self.main.lise_rltt, arr[0])]['R']
-        shift = cavity.occupancy * arr[3]
-        origin = (np.array((shift * cos(arr[4]) * sin(arr[5]),
-                            shift * sin(arr[4]) * sin(arr[5]),
-                            shift * cos(arr[5])), 'f')
-                  + cavity.coord)
+        lise_spin = bisect(self.main.lise_rltt, arr[0])
+        self.cavity = self.cavities_chain[lise_spin]['R']
+        self.shift = 0 if arr[3] == 0 else self.cavity.occupancy ** arr[3]
+        origin = (np.array((self.shift * cos(arr[4]) * sin(arr[5]),
+                            self.shift * sin(arr[4]) * sin(arr[5]),
+                            self.shift * cos(arr[5])), 'f')
+                  + self.cavity.coord)
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
         self.ligand_chain.transform(rotation, origin)
         origin = np.array((0, 0, 0), 'f')

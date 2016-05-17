@@ -109,5 +109,5 @@ if __name__ == '__main__':
     # limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path,
                           forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
-                          fibo3, max_generations=48, n_layers=5)
+                          fibo3, max_generations=30, n_layers=5)
     _run_pbar(docking, output_path)

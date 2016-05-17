@@ -151,7 +151,8 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy()
+        # print pair.lise_score
+        return pair.free_energy() + 100 * pair.shift**2 # * pair.cavity.bfactor
 
     @abstractmethod
     def estimate_progress(self):
