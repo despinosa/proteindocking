@@ -9,7 +9,7 @@ from tkFileDialog import askopenfilename, askdirectory
 
 
 class GUI(Toplevel):
-    def __init__(self,master):                    
+    def __init__(self,master,files_path):                    
         Toplevel.__init__(self,master.root,height=400,width=700)        
         self.resizable(width=FALSE,height=FALSE)        
         self.wm_title('Protein docking')
@@ -18,6 +18,7 @@ class GUI(Toplevel):
         self.DIR_OPTIONS['mustexist'] = True        
         self.OPTIONS = {}
         self.OPTIONS['defaultextension'] = '.pdb'    
+        self.FILES_PATH = files_path
         self.valid_protein = 0
         self.valid_ligand_pdb = 0
         self.valid_ligand_itp = 0
@@ -155,7 +156,7 @@ class GUI(Toplevel):
     def start_docking(self,event):                
         self.new_progress_bar()
         self.queue = Queue.Queue()
-        ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield).start()
+        ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH).start()
         self.after(50,self.process_queue)    
 
     #Auxiliary functions

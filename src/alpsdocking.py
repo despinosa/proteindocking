@@ -7,13 +7,13 @@ from alps.definitions.crossover import single_point
 
 
 class ALPSDocking(DockingProblem, ALPS):
-    def __init__(self, ligand_path, protein_path, cavities_path, itp_path,
+    def __init__(self, ligand_path, protein_path, cavities_path, itp_path, files_path,
                  forcefield, pop_size, mutate_rate, mating_rate, tourn_size,
                  stop_condition, elitism, aging_scheme, crossover=single_point,
                  n_parents=2, max_generations=1000, n_layers=10):
         super(ALPSDocking, self).__init__()
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path,
-                             itp_path, forcefield)
+                             itp_path, forcefield,files_path)
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
                    stop_condition, elitism, aging_scheme, crossover, n_parents,
                    max_generations, n_layers)

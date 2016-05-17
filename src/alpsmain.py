@@ -15,7 +15,7 @@ from pymol import cmd
 from threading import Thread
 
 class ALPSMain(Thread):
-    def __init__(self,queue,protein_path,ligand_path,itp_path,cavities_path,output_path,forcefield):
+    def __init__(self,queue,protein_path,ligand_path,itp_path,cavities_path,output_path,forcefield,files_path):
         super(ALPSMain, self).__init__()
         self.queue = queue
         self.protein_path = protein_path
@@ -24,6 +24,7 @@ class ALPSMain(Thread):
         self.cavities_path = cavities_path
         self.output_path = output_path
         self.forcefield = forcefield        
+        self.FILES_PATH = files_path
 
     def dock(self,docking):                            
         docking.start()
@@ -45,9 +46,8 @@ class ALPSMain(Thread):
         cmd.load(self.pair_file)
 
     def run(self):        
-        chdir(path.abspath(path.dirname(__file__)))
         fibo3 = lambda: fibonacci(3)    
-        docking = ALPSDocking(self.ligand_path, self.protein_path, self.cavities_path, self.itp_path,
+        docking = ALPSDocking(self.ligand_path, self.protein_path, self.cavities_path, self.itp_path, self.FILES_PATH,
                               self.forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
                               fibo3, max_generations=5, n_layers=5)
         self.dock(docking)

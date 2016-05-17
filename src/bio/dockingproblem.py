@@ -28,7 +28,7 @@ class DockingProblem(Thread):
     __metaclass__ = ABCMeta
 
     def setup(self, ligand_path, protein_path, cavities_path, itp_path,
-              forcefield):
+              forcefield,preloaded_files):
         def load_data():
             parser = PDBParser(PERMISSIVE=1)
             protein_struct = parser.get_structure('protein',
@@ -77,12 +77,12 @@ class DockingProblem(Thread):
                                      '{0}.itp'.format(self.ligand_id)))
             copy(protein_path, gmx.files_path)
             copy(cavities_path, gmx.files_path)                        
-            copy(path.join('..','files', gmx.em_file),
+            copy(path.join(preloaded_files,'files', gmx.em_file),
                  gmx.files_path)
             if(self.forcefield == gmx.GROMOS54A7):
-                copytree(path.join('..','files', 'gromos54a7_atb.ff'),
+                copytree(path.join(preloaded_files,'files', 'gromos54a7_atb.ff'),
                          path.join(gmx.files_path,'gromos54a7_atb.ff'))
-                copytree(path.join('..','files', 'gromos54a7_atb.ff'),
+                copytree(path.join(preloaded_files,'files', 'gromos54a7_atb.ff'),
                          path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
             self.protein_path = path.join(gmx.files_path, self.protein_filename)
             self.ligand_path = path.join(gmx.files_path,
