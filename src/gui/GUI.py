@@ -183,7 +183,7 @@ class GUI(Toplevel):
     def process_queue(self):
         def check_errors():
             if not self.main.ex_queue.empty():
-                e = self.main.ex_queue.get()
+                e = self.main.ex_queue.get(0)
                 tkMessageBox.showinfo("Protein docking", e.message)
                 return True
             return False
