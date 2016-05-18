@@ -10,6 +10,8 @@ from threading import current_thread
 from uuid import uuid4
 from datetime import datetime
 
+class GMXError(Exception): pass
+
 class gmx():
 
     #Directorios

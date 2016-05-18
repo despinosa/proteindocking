@@ -184,7 +184,7 @@ class GUI(Toplevel):
         def check_errors():
             if not self.main.ex_queue.empty():
                 e = self.main.ex_queue.get(0)
-                tkMessageBox.showinfo("Protein docking", e.message)
+                tkMessageBox.showinfo("Protein docking", e)
                 return True
             return False
 

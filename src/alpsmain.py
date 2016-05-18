@@ -28,12 +28,12 @@ class ALPSMain(Thread):
 
     def run(self):        
         fibo3 = lambda: fibonacci(3)    
-        docking = ALPSDocking(self.ligand_path, self.protein_path, self.cavities_path, self.itp_path, self.FILES_PATH,
-                              self.forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
-                              fibo3, max_generations=50, n_layers=7)
         try:
+            docking = ALPSDocking(self.ligand_path, self.protein_path, self.cavities_path, self.itp_path, self.FILES_PATH,
+                              self.forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
+                              fibo3, max_generations=50, n_layers=7)        
             pair_file = docking._run_stdout(self.output_path,self.queue)
-        except Exception, e:
-            self.ex_queue.put(e)
-        self.queue.put("Docking complete.\nPDB file: {0}".format(pair_file))
-        cmd.load(pair_file)
+            self.queue.put("Docking complete.\nPDB file: {0}".format(pair_file))
+            cmd.load(pair_file)
+        except Exception as e:
+            self.ex_queue.put(e)        
