@@ -16,10 +16,10 @@ class ALPSMain(Thread):
     def __init__(self,queue,protein_path,ligand_path,itp_path,cavities_path,output_path,forcefield,files_path):
         super(ALPSMain, self).__init__()
         self.queue = queue
-        self.protein_path = protein_path
-        self.ligand_path = ligand_path
-        self.itp_path = itp_path
-        self.cavities_path = cavities_path
+        self.protein_path = str(protein_path)
+        self.ligand_path = str(ligand_path)
+        self.itp_path = str(itp_path)
+        self.cavities_path = str(cavities_path)
         self.output_path = output_path
         self.forcefield = forcefield        
         self.FILES_PATH = files_path    

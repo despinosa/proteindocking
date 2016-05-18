@@ -11,7 +11,7 @@ from collections import namedtuple
 from dockedpair import DockedPair
 from gmx import gmx
 from math import exp, pi
-from os import chdir,mkdir,path,remove,getcwd,makedirs,environ
+from os import mkdir,path,remove,getcwd,makedirs,environ
 from re import match, search
 from shutil import rmtree, copy, copytree
 from threading import Thread
@@ -80,10 +80,14 @@ class DockingProblem(Thread):
             copy(path.join(preloaded_files,'files', gmx.em_file),
                  gmx.files_path)
             if(self.forcefield == gmx.GROMOS54A7):
+                environ['GMXDATA'] = path.join(gmx.files_path)
+                environ['GMXLIB'] = path.join(gmx.files_path)
                 copytree(path.join(preloaded_files,'files', 'gromos54a7_atb.ff'),
-                         path.join(gmx.files_path,'gromos54a7_atb.ff'))
-                copytree(path.join(preloaded_files,'files', 'gromos54a7_atb.ff'),
-                         path.join(gmx.gmx_path,'gromos54a7_atb.ff'))
+                         path.join(gmx.files_path,'gromos54a7_atb.ff'))                
+                copy(path.join(preloaded_files,'files','residuetypes.dat'), gmx.files_path)
+                copy(path.join(preloaded_files,'files','elements.dat'), gmx.files_path)
+                copy(path.join(preloaded_files,'files','xlateat.dat'), gmx.files_path)
+                copy(path.join(preloaded_files,'files','specbond.dat'), gmx.files_path)
             self.protein_path = path.join(gmx.files_path, self.protein_filename)
             self.ligand_path = path.join(gmx.files_path,
                                          '{0}.pdb'.format(self.ligand_id))
@@ -116,9 +120,7 @@ class DockingProblem(Thread):
         prepare_wdfiles()
         gmx.preprocess(self)                      
         load_data()
-        self.encode()
-
-        chdir(gmx.gmx_path)
+        self.encode()        
 
     def encode(self):
         """Codifica el problema en un arreglo de longitud 6.
