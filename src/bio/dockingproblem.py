@@ -114,17 +114,11 @@ class DockingProblem(Thread):
         self.cavities_filename = path.split(cavities_path)[-1]
         self.forcefield = forcefield
         prepare_wdfiles()
-        gmx.center_mol(self.ligand_id)
-        gmx.generate_protein_topology(self)
-        remove(self.protein_path)
-        gmx.add_hydrogens(self)
-        gmx.generate_protein_topology(self)
-        gmx.process_topology(self)
-        gmx.process_folders(self)        
-        environ['GMX_MAXBACKUP'] = '-1'
-        chdir(gmx.gmx_path)
+        gmx.preprocess(self)                      
         load_data()
         self.encode()
+
+        chdir(gmx.gmx_path)
 
     def encode(self):
         """Codifica el problema en un arreglo de longitud 6.
@@ -152,7 +146,7 @@ class DockingProblem(Thread):
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
         # print pair.lise_score
-        return pair.free_energy() + 100 * pair.shift**2 # * pair.cavity.bfactor
+        return pair.free_energy() + exp((100-pair.shift) * 10e-2 * pair.cavity.bfactor) # * pair.cavity.bfactor
 
     @abstractmethod
     def estimate_progress(self):

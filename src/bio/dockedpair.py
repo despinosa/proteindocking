@@ -38,7 +38,7 @@ class DockedPair(object):
     def decode(self, arr):
         lise_spin = bisect(self.main.lise_rltt, arr[0])
         self.cavity = self.cavities_chain[lise_spin]['R']
-        self.shift = 0 if arr[3] == 0 else self.cavity.occupancy ** arr[3]
+        self.shift = self.cavity.occupancy * arr[3]
         origin = (np.array((self.shift * cos(arr[4]) * sin(arr[5]),
                             self.shift * sin(arr[4]) * sin(arr[5]),
                             self.shift * cos(arr[5])), 'f')

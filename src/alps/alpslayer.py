@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import Queue
 from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
 from random import randint, random, sample
 from sys import maxint
-from threading import Event, Lock, Thread
+from threading import Event, Lock, Thread, current_thread
 
 
 class ALPSLayer(Thread):
@@ -23,6 +23,7 @@ class ALPSLayer(Thread):
         self.copied.clear()
         self.replaced = Event()
         self.replaced.clear()
+        self.ex_queue = Queue.Queue()
 
     def rand_pop(self):
         del self.population[:]
@@ -89,10 +90,12 @@ class ALPSLayer(Thread):
         self.replaced.set()
 
     def run(self):
-        if self.prev_layer is None:
-            self.rand_pop()
-        while not self.main.stop_condition():
-            self.iterate()
-        self.copied.set()
-        self.replaced.set()
-
+        try:
+            if self.prev_layer is None:
+                self.rand_pop()
+            while not self.main.stop_condition():
+                self.iterate()
+            self.copied.set()
+            self.replaced.set()
+        except Exception as e:            
+            self.ex_queue.put(e)

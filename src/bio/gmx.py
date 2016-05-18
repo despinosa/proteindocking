@@ -54,65 +54,50 @@ class gmx():
             out_file.write(newfile)       
 
     @staticmethod
-    def center_mol(molecule):
-        os.chdir(gmx.files_path)
+    def center_mol(molecule):        
         molecule = molecule.split('.')[0]
         cmd_center = ("gmx editconf -f {0}.pdb -c -o {0}.pdb".format(molecule))
-        try:
-            p = subprocess.Popen(shlex.split(cmd_center), universal_newlines=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()   
-        except Exception:
-            e = sys.exc_info()[1]
-            print "Error: %s" % e
+        
+        p = subprocess.Popen(shlex.split(cmd_center), universal_newlines=True,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out,err = p.communicate()           
 
     @staticmethod
-    def process_topology(dp_object):
-        os.chdir(gmx.files_path)
+    def process_topology(dp_object):        
         if not os.path.isfile('topol.top'):
             raise OSError('Checar GMX: No se genero el archivo de topologia de la proteina')
         shutil.copyfile('topol.top',gmx.topol_with_ligand_file)
         gmx.ioFile(dp_object.ligand_id,dp_object.forcefield)
 
     @staticmethod
-    def generate_protein_topology(dp_object):                        
-        os.chdir(gmx.files_path)        
+    def generate_protein_topology(dp_object):                                
         cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -water none -missing".
-                                format(dp_object.protein_filename,gmx.forcefields[dp_object.forcefield]))
-        try:
-            p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()                        
-        except Exception:
-            e = sys.exc_info()[1]
-            print "Error: %s" % e
+                                format(dp_object.protein_filename,gmx.forcefields[dp_object.forcefield]))        
+        p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out,err = p.communicate()                                
 
     @staticmethod
-    def add_hydrogens(dp_object):        
-        os.chdir(gmx.files_path)
+    def add_hydrogens(dp_object):                
         cmd_hydrogens = [("gmx grompp -f {0} -o em_aux.tpr -c conf.gro".
                           format(gmx.em_file)),
                          ("gmx trjconv -f conf.gro -o {0} -s em_aux.tpr".
-                          format(dp_object.protein_filename))]
-        try:
-            n = len(cmd_hydrogens)
-            i = 0
-            args = None
-            if not (os.path.isfile('conf.gro') or os.path.isfile(dp_object.protein_filename)):
-                raise OSError('Checar GMX')
-            while(i<n):
-                if i:
-                    args = '0'
-                    if not os.path.isfile('em_aux.tpr'):
-                        raise OSError('Checar GMX')
-                p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
-                                         stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                                
-                out,err = p.communicate(args)                                      
-                p.stdin.close()                        
-                i += 1
-        except Exception:
-            e = sys.exc_info()[1]                
-            print "Error: %s" % e    
+                          format(dp_object.protein_filename))]        
+        n = len(cmd_hydrogens)
+        i = 0
+        args = None
+        if not (os.path.isfile('conf.gro') or os.path.isfile(dp_object.protein_filename)):
+            raise OSError('Checar GMX')
+        while(i<n):
+            if i:
+                args = '0'
+                if not os.path.isfile('em_aux.tpr'):
+                    raise OSError('Checar GMX')
+            p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
+                                     stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                                
+            out,err = p.communicate(args)                                      
+            p.stdin.close()                        
+            i += 1
             
     @staticmethod
     def delete_files_in_path(dirPath):
@@ -121,19 +106,26 @@ class gmx():
              os.remove(os.path.join(dirPath,fileName))
                     
     @staticmethod
-    def process_folders(dp_object):    
-        try:        
-            thread_name = current_thread().name                                            
-            shutil.copy(os.path.join(gmx.files_path, dp_object.protein_filename), gmx.gmx_path)        
-            shutil.copy(os.path.join(gmx.files_path, '{0}.itp'.format(dp_object.ligand_id)), gmx.gmx_path)
-            shutil.copy(os.path.join(gmx.files_path, '{0}.pdb'.format(dp_object.ligand_id)), gmx.gmx_path)
-            shutil.copy(os.path.join(gmx.files_path, gmx.em_file), gmx.gmx_path)
-            shutil.copy(os.path.join(gmx.files_path, gmx.topol_with_ligand_file), gmx.gmx_path)                
-            shutil.copy(os.path.join(gmx.files_path, 'conf.gro'), gmx.gmx_path)                
-        except Exception:
-            e = sys.exc_info()[1]                
-            print "Error: %s" % e
-            print thread_name
+    def copy_files_to_gmx_path(dp_object):            
+        thread_name = current_thread().name                                            
+        shutil.copy(dp_object.protein_filename, gmx.gmx_path)        
+        shutil.copy('{0}.itp'.format(dp_object.ligand_id), gmx.gmx_path)
+        shutil.copy('{0}.pdb'.format(dp_object.ligand_id), gmx.gmx_path)
+        shutil.copy(gmx.em_file, gmx.gmx_path)
+        shutil.copy(gmx.topol_with_ligand_file, gmx.gmx_path)                
+        shutil.copy('conf.gro', gmx.gmx_path)                        
+
+    @staticmethod
+    def preprocess(dp_object):
+        os.chdir(gmx.files_path)
+        gmx.center_mol(dp_object.ligand_id)
+        gmx.generate_protein_topology(dp_object)
+        #remove(dp_object.protein_path)
+        gmx.add_hydrogens(dp_object)
+        gmx.generate_protein_topology(dp_object)
+        gmx.process_topology(dp_object)
+        gmx.copy_files_to_gmx_path(dp_object)
+        os.environ['GMX_MAXBACKUP'] = '-1'
 
     @staticmethod
     def calculate_fitness(generation,hash_):        
@@ -160,15 +152,9 @@ class gmx():
             str_energy = gmx.regexp_energy.search(err)
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
-            # new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
-            # if not os.path.isfile(new_name):
-            #     os.rename(dockedpair,new_name)
+            new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
+            if not os.path.isfile(new_name):
+                os.rename(dockedpair,new_name)
         except ValueError:
-            print str_energy.group()        
-        except Exception:
-            e = sys.exc_info()[1]    
-            print "Error: %s" % e
-            print out
-            print err
-            print thread_name                    
+            raise ValueError('Energia erronea')                            
         return final_energy

@@ -3,6 +3,10 @@ import Queue
 import time
 import ttk, threading
 import tkMessageBox
+from datetime import datetime
+from sys import stdout
+from time import sleep    
+from os import path 
 from alpsmain import ALPSMain
 from Tkinter import * 
 from tkFileDialog import askopenfilename, askdirectory
@@ -154,16 +158,20 @@ class GUI(Toplevel):
         self.validate()
 
     def start_docking(self,event):                
-        self.new_progress_bar()
-        self.queue = Queue.Queue()
-        ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH).start()
-        self.after(50,self.process_queue)    
+        self.new_progress_bar()        
+        self.queue = Queue.Queue()                  
+        try:
+            ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH).start();
+            self.after(100, self.process_queue)
+        except Exception as e:                    
+            tkMessageBox.showinfo("Protein docking",e)
 
     #Auxiliary functions
     def new_progress_bar(self):
-        self.prog_bar = ttk.Progressbar(self, orient="horizontal",length=300, mode="indeterminate")
+        self.prog_bar = ttk.Progressbar(self, orient="horizontal",length=300, mode="determinate",maximum=100)
         self.prog_bar.pack(side=TOP)
-        self.prog_bar.start()            
+        self.prog_bar["value"] = 0        
+                   
     #center frame
     def center(self):
         self.update_idletasks()
@@ -176,9 +184,13 @@ class GUI(Toplevel):
 
     def process_queue(self):
         try:
-            msg = self.queue.get(0) # mi proceso va a seguir hasta que haya algo en la cola
+            msg = self.queue.get(0)            
+            step_ = float(msg)                        
+            self.prog_bar["value"] = step_
+            self.after(100,self.process_queue)
+        except ValueError:
             self.prog_bar.stop()
             tkMessageBox.showinfo("Protein docking",msg)
-            self.destroy()            
-        except Queue.Empty:
-            self.after(50, self.process_queue)
+            self.destroy()                
+        except Queue.Empty:                        
+            self.after(100, self.process_queue)
