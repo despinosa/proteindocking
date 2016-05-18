@@ -94,7 +94,7 @@ class gmx():
         protein_file = path.join(gmx.files_path,dp_object.protein_filename).encode('string-escape')              
         topol_out = path.join(gmx.files_path,gmx.topol_file).encode('unicode-escape')
         conf_out = path.join(gmx.files_path,gmx.confgro_file).encode('unicode-escape')
-        posre_itp = path.join(gmx.files_path,'posre_itp.gro').encode('unicode-escape')
+        posre_itp = path.join(gmx.files_path,'posre.itp').encode('unicode-escape')
         
         cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -p {2} -o {3} -i {4} -water none -missing".
                                 format(protein_file,gmx.forcefields[dp_object.forcefield],topol_out,conf_out,posre_itp))        
