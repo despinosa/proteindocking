@@ -162,7 +162,7 @@ class gmx():
         mdlog_out = path.join(gmx.gmx_path,'md.log').encode('unicode-escape')
         
         final_energy = float('inf')                
-        cmd_fitness = [("gmx grompp -v -f {0} -c {1} -o {2} -p {3} -po {4}".format(em_file_path, dockedpair_file, em_thread_tpr_out,topol_with_ligand_file_path,mdout_out)),
+        cmd_fitness = [("gmx grompp -v -f {0} -c {1} -o {2} -p {3} -po {4} -maxwarn 2".format(em_file_path, dockedpair_file, em_thread_tpr_out,topol_with_ligand_file_path,mdout_out)),
                        "gmx mdrun -v -s {0} -o {1} -c {2} -e {3} -g {4}".format(em_thread_tpr_out.encode('string-escape'), traj_out, confoutgro_out, ener_out, mdlog_out)]
         try:
             n = len(cmd_fitness)
