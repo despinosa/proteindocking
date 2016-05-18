@@ -121,6 +121,7 @@ if __name__ == "__main__":
     from bio.dockedpair import DockedPair    
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
+<<<<<<< HEAD
         output_path) = argv[1:7]
     forcefield = int(forcefield)
     fibo3 = lambda: fibonacci(3)
@@ -135,3 +136,13 @@ if __name__ == "__main__":
         docking._run_pbar(output_path)        
     except Exception as e:
         print e
+=======
+            files_path) = argv[1:7]
+    forcefield = int(forcefield)
+    fibo3 = lambda: fibonacci(3)
+    # limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
+    docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path,
+                          files_path, forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
+                          fibo3, max_generations=30, n_layers=5)
+    _run_pbar(docking, files_path)
+>>>>>>> origin/otro-alps
