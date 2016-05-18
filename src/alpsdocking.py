@@ -127,8 +127,8 @@ if __name__ == "__main__":
     # limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
     docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, 
                       output_path,
-                      forcefield, 10, 0.1, 0.8, 5, gen_limit, enhanced,
-                      fibo3, max_generations=5, n_layers=5)
+                      forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
+                      fibo3, max_generations=33, n_layers=5)
     try:
         #docking._run_stdout(output_path,None)
         #docking._run_silent(output_path)

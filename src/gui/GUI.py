@@ -160,11 +160,9 @@ class GUI(Toplevel):
     def start_docking(self,event):                
         self.new_progress_bar()        
         self.queue = Queue.Queue()                  
-        try:
-            ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH).start();
-            self.after(100, self.process_queue)
-        except Exception as e:                    
-            tkMessageBox.showinfo("Protein docking",e)
+        self.main = ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH)
+        self.main.start()
+        self.after(100, self.process_queue)
 
     #Auxiliary functions
     def new_progress_bar(self):
@@ -183,8 +181,16 @@ class GUI(Toplevel):
         self.geometry("%dx%d+%d+%d" % (self.size + (self.x, self.y)))        
 
     def process_queue(self):
+        def check_errors():
+            if not self.main.ex_queue.empty():
+                e = self.main.ex_queue.get()
+                tkMessageBox.showinfo("Protein docking", e.message)
+                return True
+            return False
+
         try:
-            msg = self.queue.get(0)            
+            if check_errors(): return
+            msg = self.queue.get(0)
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
             self.after(100,self.process_queue)
@@ -192,5 +198,5 @@ class GUI(Toplevel):
             self.prog_bar.stop()
             tkMessageBox.showinfo("Protein docking",msg)
             self.destroy()                
-        except Queue.Empty:                        
+        except Queue.Empty:
             self.after(100, self.process_queue)

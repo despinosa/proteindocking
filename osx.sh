@@ -6,5 +6,5 @@
 # umount /tmp/ramdisk/
 # hdiutil detach /dev/disk6
 # export TMPDIR=/tmp/ramdisk
-python -W ignore src/alpsdocking.py files/benzamidine.pdb files/trypsin.pdb files/trypsin_cavs.pdb files/benzamidine.itp 1 ~
+python -W ignore src/alpsdocking.py files/tryp_benz/benzamidine.pdb files/tryp_benz/trypsin.pdb files/tryp_benz/trypsin_cavs.pdb files/tryp_benz/benzamidine.itp 1 .
 # open $TMPDIR/best.pdb
