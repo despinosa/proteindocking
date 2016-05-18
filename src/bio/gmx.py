@@ -19,11 +19,11 @@ class gmx():
     TMP = 'tmp'
     GMX_FILES = 'gmx_files'                  
     gmx_path = path.join(TEMPDIR, ROOT, TMP)        
-    files_path = path.join(TEMPDIR, ROOT, FILES) 
+    files_path = path.join(TEMPDIR, ROOT, FILES)
 
     #Enum campos de fuerza
     CHARMM27, GROMOS54A7 = range(2)
-    forcefields = {0:'charmm27',1:'gromos54a7_atb'}
+    forcefields = {0:'charmm27',1:'gromos54a7_atb_pd'}
 
     #Archivos constantes para gmx
     topol_with_ligand_file = 'topol_with_ligand.top'   
@@ -64,14 +64,16 @@ class gmx():
     @staticmethod
     def center_mol(molecule):
         molecule = molecule.split('.')[0]+'.pdb'
-        molecule_file = path.join(gmx.files_path,molecule)
-        if not path.isfile(molecule_file):
-            raise OSError('Falta el archivo del ligando')
-        cmd_center = ("gmx editconf -f {0} -c -o {0}".format(molecule_file))
+        if not path.isfile(path.join(gmx.files_path,molecule)):
+            raise OSError('Falta el archivo del ligando')        
+        molecule_file = path.join(gmx.files_path,molecule).encode('string-escape')        
+        cmd_center = ("gmx editconf -f {0} -c -o {1}".format(molecule_file,molecule_file.encode('unicode-escape')))
         
         p = subprocess.Popen(shlex.split(cmd_center), universal_newlines=True,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out,err = p.communicate()           
+        if p.returncode:                    
+            raise Exception(str(p.returncode) + err)
 
     @staticmethod
     def process_topology(dp_object):        
@@ -98,7 +100,9 @@ class gmx():
                                 format(protein_file,gmx.forcefields[dp_object.forcefield],topol_out,conf_out,posre_itp))        
         p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out,err = p.communicate()                                  
+        out,err = p.communicate()                           
+        if p.returncode:                    
+            raise Exception(str(p.returncode) + err)       
 
     @staticmethod
     def add_hydrogens(dp_object):
@@ -126,24 +130,10 @@ class gmx():
             p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
                                      stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                                
             out,err = p.communicate(args)                                
+            if p.returncode:                    
+                raise Exception(str(p.returncode) + err)
             p.stdin.close()                        
-            i += 1
-            
-    @staticmethod
-    def delete_files_in_path(dirPath):
-        fileList = listdir(dirPath)
-        for fileName in fileList:
-             remove(path.join(dirPath,fileName))
-                    
-    @staticmethod
-    def copy_files_to_gmx_path(dp_object): 
-        thread_name = current_thread().name                                            
-        shutil.copy(path.join(gmx.files_path,dp_object.protein_filename), gmx.gmx_path)        
-        shutil.copy(path.join(gmx.files_path,'{0}.itp'.format(dp_object.ligand_id)), gmx.gmx_path)
-        shutil.copy(path.join(gmx.files_path,'{0}.pdb'.format(dp_object.ligand_id)), gmx.gmx_path)
-        shutil.copy(path.join(gmx.files_path,gmx.em_file), gmx.gmx_path)
-        shutil.copy(path.join(gmx.files_path,gmx.topol_with_ligand_file), gmx.gmx_path)                
-        shutil.copy(path.join(gmx.files_path,gmx.confgro_file), gmx.gmx_path)                        
+            i += 1                
 
     @staticmethod
     def preprocess(dp_object):                      
@@ -185,7 +175,7 @@ class gmx():
                 out,err = p.communicate()            
                 i += 1                                         
                 if p.returncode:                    
-                    raise Exception(p.returncode)  
+                    raise Exception(str(p.returncode) + err)  
             str_energy = gmx.regexp_energy.search(err)
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    

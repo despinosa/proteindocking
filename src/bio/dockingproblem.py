@@ -82,8 +82,8 @@ class DockingProblem(Thread):
             if(self.forcefield == gmx.GROMOS54A7):
                 environ['GMXDATA'] = path.join(gmx.files_path)
                 environ['GMXLIB'] = path.join(gmx.files_path)
-                copytree(path.join(preloaded_files,'files', 'gromos54a7_atb.ff'),
-                         path.join(gmx.files_path,'gromos54a7_atb.ff'))                
+                copytree(path.join(preloaded_files,'files', gmx.forcefields[gmx.GROMOS54A7]+'.ff'),
+                         path.join(gmx.files_path,gmx.forcefields[gmx.GROMOS54A7]+'.ff'))                
                 copy(path.join(preloaded_files,'files','residuetypes.dat'), gmx.files_path)
                 copy(path.join(preloaded_files,'files','elements.dat'), gmx.files_path)
                 copy(path.join(preloaded_files,'files','xlateat.dat'), gmx.files_path)
@@ -149,7 +149,7 @@ class DockingProblem(Thread):
         pair = DockedPair(self, arr)
         # print pair.lise_score
         # print pair.shift
-        return pair.free_energy() + exp((100-pair.shift) * 10e-2 * pair.cavity.bfactor) # * pair.cavity.bfactor
+        return pair.free_energy() + exp(50 - pair.shift)
 
     @abstractmethod
     def estimate_progress(self):
