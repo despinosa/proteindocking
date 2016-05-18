@@ -4,6 +4,7 @@ from alps.chromosome import Chromosome
 from alps.definitions.crossover import single_point
 from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
+from alps.definitions.agingscheme import fibonacci
 from random import random
 import numpy as np
 from math import e, exp, sin, cos, pi
@@ -46,7 +47,10 @@ class ALPSTest(ALPS):
         super(ALPSTest, self).__init__()
         self.lower = np.full(n, -5.12)
         self.upper = np.full(n, 5.12)
-        self.setup(50, 0.1, 0.8, 5, gen_limit, enhanced, single_point)
+        self.span = self.upper - self.lower
+        fibo3 = lambda: fibonacci(3)
+        self.setup(35, 0.1, 0.8, 5, gen_limit, enhanced, fibo3,
+                   max_generations=666)
 
     def run(self):
         for lay in self.layers:
