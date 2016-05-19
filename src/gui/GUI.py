@@ -3,6 +3,7 @@ import Queue
 import time
 import ttk, threading
 import tkMessageBox
+import logging
 from datetime import datetime
 from sys import stdout
 from time import sleep    
@@ -95,7 +96,10 @@ class GUI(Toplevel):
         #Docking button
         self.run_docking = Button(self,text="Start docking",name="run_docking",state=DISABLED)        
         self.run_docking.pack(side="bottom")      
-        self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)                 
+        self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)  
+        #Logger conf
+        logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
+        self.logger = logging.getLogger('Protein docking')      
 
         self.lift()
     #Validations        
@@ -185,7 +189,8 @@ class GUI(Toplevel):
         def check_errors():
             if not self.main.ex_queue.empty():
                 e = self.main.ex_queue.get(0)
-                tkMessageBox.showinfo("Protein docking", e)
+                tkMessageBox.showinfo("Protein docking","Internal error")
+                self.logger.info(e)
                 return True
             return False
 

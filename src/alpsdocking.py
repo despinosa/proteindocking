@@ -136,14 +136,19 @@ if __name__ == "__main__":
     from alps.definitions.agingscheme import fibonacci
     from alps.definitions.selection import enhanced
     from alps.definitions.stopcondition import gen_limit
-    from bio.dockedpair import DockedPair    
+    from bio.dockedpair import DockedPair
+    from datetime import datetime
+    import logging    
+
+    logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
+    logger = logging.getLogger('Protein docking')
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
-        output_path) = argv[1:7]    
-    docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
+        output_path) = argv[1:7]
     try:
+        docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
         #docking._run_stdout(output_path,None)
         #docking._run_silent(output_path)
         docking._run_pbar(output_path)        
     except Exception as e:
-        print e
+        logger.info(e)
