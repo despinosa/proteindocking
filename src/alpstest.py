@@ -6,6 +6,7 @@ from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
 from alps.definitions.agingscheme import fibonacci
 from random import random
+from os import path
 import numpy as np
 from math import e, exp, sin, cos, pi
 
@@ -43,7 +44,14 @@ def random_fitness(array):
 
 class ALPSTest(ALPS):
     """docstring for ALPSTest"""
-    def __init__(self, n):
+    def __init__(self, n, preloaded_files_path):
+        def config_file():
+            f = open(path.join(preloaded_files_path,'files','config'), 'r')
+            self.config_args = []
+            for i,line in enumerate(f):
+                self.config_args.append(line.split('=')[-1]) 
+            if(len(self.config_args) != 7):
+                raise Exception('Archivo de configuracion erroneo.')  
         self.prev_gen = 0
         self.prev_best = float('inf')
         super(ALPSTest, self).__init__()
@@ -51,9 +59,18 @@ class ALPSTest(ALPS):
         self.upper = np.full(n, 5.12)
         self.span = self.upper - self.lower
         self.fitness_impl = rastrigin
-        fibo3 = lambda: fibonacci(3)
-        self.setup(35, 0.1, 0.8, 5, gen_limit, enhanced, fibo3,
-                   max_generations=111)
+        config_file()
+        aging_scheme_factor = int(self.config_args[0])
+        pop_size = int(self.config_args[1])
+        mutate_rate = float(self.config_args[2])
+        mating_rate = float(self.config_args[3])
+        tourn_size = int(self.config_args[4])
+        max_generations = int(self.config_args[5])
+        n_layers = int(self.config_args[6])
+        fibo = lambda: fibonacci(aging_scheme_factor)
+        self.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
+                   gen_limit, enhanced, fibo, single_point, max_generations,
+                   n_layers)
         self.log = open('log.txt', 'w+')
 
     def run(self):
@@ -75,7 +92,7 @@ class ALPSTest(ALPS):
 if __name__ == '__main__':
     from datetime import datetime
     from sys import argv
-    a = ALPSTest(int(argv[1]))
+    a = ALPSTest(int(argv[1]), argv[2])
     start = datetime.now()
     a.run()
     print 'time: {0}\n'.format(datetime.now()-start)
