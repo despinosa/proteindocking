@@ -19,7 +19,7 @@ class ALPS(object):
 
     def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
               stop_condition, elitism, aging_scheme, crossover=single_point,
-              n_parents=2, max_generations=50, n_layers=5):
+              max_generations=50, n_layers=5, n_parents=2):
         self.name = '{0}{1}'.format(self.__class__.__name__.lower(),
                                     self.instances)
         self.pop_size = pop_size

@@ -2,25 +2,43 @@
 # -*- coding: utf-8 -*-
 
 from alps.alps import ALPS
-from bio.dockingproblem import DockingProblem
 from alps.definitions.crossover import single_point
+from alps.definitions.agingscheme import fibonacci
+from alps.definitions.selection import enhanced
+from alps.definitions.stopcondition import gen_limit
 from bio.dockedpair import DockedPair
+from bio.dockingproblem import DockingProblem
 from Bio.PDB.PDBIO import Select
+from os import path
 import Queue
-
 
 class ALPSDocking(DockingProblem, ALPS):
     def __init__(self, ligand_path, protein_path, cavities_path, itp_path, preloaded_files_path,
-                 forcefield, pop_size, mutate_rate, mating_rate, tourn_size,
-                 stop_condition, elitism, aging_scheme, crossover=single_point,
-                 n_parents=2, max_generations=1000, n_layers=10):
-        super(ALPSDocking, self).__init__()
+                 forcefield):        
+        def config_file():
+            f = open(path.join(preloaded_files_path,'files','config'), 'r')
+            self.config_args = []
+            for i,line in enumerate(f):
+                self.config_args.append(line.split('=')[-1]) 
+            if(len(self.config_args) != 7):
+                raise Exception('Archivo de configuracion erroneo.')            
+        super(ALPSDocking, self).__init__()        
+        self.ex_queue = Queue.Queue() 
+        config_file()
+        aging_scheme_factor = int(self.config_args[0])
+        pop_size = int(self.config_args[1])
+        mutate_rate = float(self.config_args[2])
+        mating_rate = float(self.config_args[3])
+        tourn_size = int(self.config_args[4])
+        max_generations = int(self.config_args[5])
+        n_layers = int(self.config_args[6])
+        fibo = lambda: fibonacci(aging_scheme_factor)
+
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path,
                              itp_path, forcefield, preloaded_files_path)
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
-                   stop_condition, elitism, aging_scheme, crossover, n_parents,
-                   max_generations, n_layers)
-        self.ex_queue = Queue.Queue()        
+                   gen_limit, enhanced, fibo, single_point, max_generations, n_layers)
+               
 
     def estimate_progress(self):
         return float(self.generation) / self.max_generations
@@ -35,7 +53,7 @@ class ALPSDocking(DockingProblem, ALPS):
         self.join_layers()
 
     run = solve
-    
+
     def _run_stdout(docking, output_path,pb_queue):    
         from datetime import datetime
         from sys import stdout
@@ -117,18 +135,12 @@ if __name__ == "__main__":
     from sys import argv
     from alps.definitions.agingscheme import fibonacci
     from alps.definitions.selection import enhanced
-    from alps.definitions.stopcondition import conv_test, gen_limit
+    from alps.definitions.stopcondition import gen_limit
     from bio.dockedpair import DockedPair    
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
-        output_path) = argv[1:7]
-    forcefield = int(forcefield)
-    fibo3 = lambda: fibonacci(3)
-    # limited_conv = lambda alps: True if gen_limit(alps) else conv_test(alps)
-    docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, 
-                      output_path,
-                      forcefield, 35, 0.1, 0.8, 5, gen_limit, enhanced,
-                      fibo3, max_generations=33, n_layers=5)
+        output_path) = argv[1:7]    
+    docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
     try:
         #docking._run_stdout(output_path,None)
         #docking._run_silent(output_path)

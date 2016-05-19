@@ -157,7 +157,8 @@ class GUI(Toplevel):
             self.valid_output = 1
         self.validate()
 
-    def start_docking(self,event):                
+    def start_docking(self,event):   
+        self.run_docking["state"] = "disabled"             
         self.new_progress_bar()        
         self.queue = Queue.Queue()                  
         self.main = ALPSMain(self.queue,self.protein_path,self.ligand_path,self.itp_path,self.cavities_path,self.output,self.forcefield,self.FILES_PATH)
