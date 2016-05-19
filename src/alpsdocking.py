@@ -139,17 +139,18 @@ if __name__ == "__main__":
     from bio.dockedpair import DockedPair
     from datetime import datetime
     from traceback import format_exc    
-    import logging    
-
-    logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
-    logger = logging.getLogger('Protein docking')
+    import logging        
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
         output_path) = argv[1:7]
+    logger = None
     try:
         docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
         #docking._run_stdout(output_path,None)
         #docking._run_silent(output_path)
         docking._run_pbar(output_path)        
     except Exception as e:
-        logger.info(str(e) + format_exc() + str(exc_info()[0]))
+        if logger == None:
+            logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
+            logger = logging.getLogger('Protein docking')
+        logger.info(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))

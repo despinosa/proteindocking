@@ -4,6 +4,7 @@ import time
 import ttk, threading
 import tkMessageBox
 import logging
+import subprocess
 from datetime import datetime
 from sys import stdout
 from time import sleep    
@@ -15,6 +16,9 @@ from tkFileDialog import askopenfilename, askdirectory
 
 class GUI(Toplevel):
     def __init__(self,master,files_path):                    
+        if not self.validate_gmx():
+            tkMessageBox.showinfo("Protein docking","Add gmx to environment variables")
+            return
         Toplevel.__init__(self,master.root,height=400,width=700)        
         self.resizable(width=FALSE,height=FALSE)        
         self.wm_title('Protein docking')
@@ -30,7 +34,7 @@ class GUI(Toplevel):
         self.valid_cavity = 0
         self.valid_output = 0                            
         self.valid_ff = 0
-        self.forcefields = ['charmm27','gromos54a7_atb']        
+        self.forcefields = ['charmm27','gromos54a7_atb']                           
         #Labels
         self.l_protein_pdb = Label(self, text="Protein PDB file: ",padx=10,pady=10)
         self.l_ligand_pdb = Label(self, text="Ligand PDB file: ",padx=10,pady=10)
@@ -96,11 +100,8 @@ class GUI(Toplevel):
         #Docking button
         self.run_docking = Button(self,text="Start docking",name="run_docking",state=DISABLED)        
         self.run_docking.pack(side="bottom")      
-        self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)  
-        #Logger conf
-        logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
-        self.logger = logging.getLogger('Protein docking')      
-
+        self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)          
+        self.logger = None
         self.lift()
     #Validations        
     def validate(self):                
@@ -188,14 +189,17 @@ class GUI(Toplevel):
     def process_queue(self):
         def check_errors():
             if not self.main.ex_queue.empty():
-                e = self.main.ex_queue.get(0)
-                tkMessageBox.showinfo("Protein docking","Internal error")
+                e = self.main.ex_queue.get(0)                
+                if self.logger == None:
+                    logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
+                    self.logger = logging.getLogger('Protein docking')   
                 self.logger.info(e)
+                tkMessageBox.showinfo("Protein docking","Internal error")
                 return True
             return False
 
         try:
-            if check_errors(): return
+            if check_errors(): pass                
             msg = self.queue.get(0)
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
@@ -206,3 +210,15 @@ class GUI(Toplevel):
             self.destroy()                
         except Queue.Empty:
             self.after(100, self.process_queue)
+
+    def validate_gmx(self):  
+        try:          
+            cmd_gmx = ['gmx']        
+            p = subprocess.Popen(cmd_gmx, universal_newlines=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out,err = p.communicate()           
+            if p.returncode:                    
+                raise Exception(str(p.returncode) + err)
+            return True
+        except Exception as e:            
+            return False

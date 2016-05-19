@@ -2,7 +2,6 @@ import subprocess
 import shutil
 import re
 import signal
-import shlex
 import sys
 from os import path, environ, rename
 from tempfile import gettempdir
@@ -56,9 +55,7 @@ class gmx():
                     allowed = 1
                 if 'protein' in line.lower() and allowed:
                     if i == len(buf) - 1:
-                        line += ligand_id +' 1'
-                    elif '[' or ']' or '\n' in line[i+1]:                        
-                        line += ligand_id +' 1'                                
+                        line += ligand_id +' 1'                                                    
                 newfile += line                
             out_file.write(newfile)     
 
