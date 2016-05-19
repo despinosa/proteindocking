@@ -12,6 +12,8 @@ from alps.definitions.stopcondition import gen_limit
 from pymol import cmd
 from Queue import Queue
 from threading import Thread
+from sys import exc_info
+from traceback import format_exc
 
 class ALPSMain(Thread):
     def __init__(self,queue,protein_path,ligand_path,itp_path,cavities_path,output_path,forcefield,files_path):
@@ -33,4 +35,4 @@ class ALPSMain(Thread):
             self.queue.put("Docking complete.\nPDB file: {0}".format(pair_file))
             cmd.load(pair_file)
         except Exception as e:
-            self.ex_queue.put(e)        
+            self.ex_queue.put(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))      

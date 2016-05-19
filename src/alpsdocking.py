@@ -132,12 +132,13 @@ class ALPSDocking(DockingProblem, ALPS):
         out_file.close()
 
 if __name__ == "__main__":
-    from sys import argv
+    from sys import argv, exc_info
     from alps.definitions.agingscheme import fibonacci
     from alps.definitions.selection import enhanced
     from alps.definitions.stopcondition import gen_limit
     from bio.dockedpair import DockedPair
     from datetime import datetime
+    from traceback import format_exc    
     import logging    
 
     logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
@@ -151,4 +152,4 @@ if __name__ == "__main__":
         #docking._run_silent(output_path)
         docking._run_pbar(output_path)        
     except Exception as e:
-        logger.info(e)
+        logger.info(str(e) + format_exc() + str(exc_info()[0]))

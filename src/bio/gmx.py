@@ -18,8 +18,7 @@ class gmx():
     TEMPDIR = gettempdir()        
     ROOT = 'proteindocking_{0}'.format(datetime.now().strftime('%Y%m%d%H%M%S%f'))
     FILES = 'files'
-    TMP = 'tmp'
-    GMX_FILES = 'gmx_files'                  
+    TMP = 'tmp'                      
     gmx_path = path.join(TEMPDIR, ROOT, TMP)        
     files_path = path.join(TEMPDIR, ROOT, FILES)
 
@@ -69,9 +68,8 @@ class gmx():
         if not path.isfile(path.join(gmx.files_path,molecule)):
             raise OSError('Falta el archivo del ligando')        
         molecule_file = path.join(gmx.files_path,molecule).encode('string-escape')        
-        cmd_center = ("gmx editconf -f {0} -c -o {1}".format(molecule_file,molecule_file.encode('unicode-escape')))
-        
-        p = subprocess.Popen(shlex.split(cmd_center), universal_newlines=True,
+        cmd_center = ['gmx','editconf', '-f',molecule_file.encode('unicode-escape'),'-c','-o',molecule_file.encode('unicode-escape')]
+        p = subprocess.Popen(cmd_center, universal_newlines=True,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out,err = p.communicate()           
         if p.returncode:                    
@@ -98,9 +96,9 @@ class gmx():
         conf_out = path.join(gmx.files_path,gmx.confgro_file).encode('unicode-escape')
         posre_itp = path.join(gmx.files_path,'posre.itp').encode('unicode-escape')
         
-        cmd_protein_topology = ("gmx pdb2gmx -ignh -f {0} -ff {1} -p {2} -o {3} -i {4} -water none -missing".
-                                format(protein_file,gmx.forcefields[dp_object.forcefield],topol_out,conf_out,posre_itp))        
-        p = subprocess.Popen(shlex.split(cmd_protein_topology), universal_newlines=True,
+        cmd_protein_topology = ['gmx','pdb2gmx','-ignh','-f',protein_file,'-ff',gmx.forcefields[dp_object.forcefield],'-p',
+                                topol_out,'-o',conf_out,'-i',posre_itp,'-water','none','-missing']                                
+        p = subprocess.Popen(cmd_protein_topology, universal_newlines=True,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out,err = p.communicate()                           
         if p.returncode:                    
@@ -117,10 +115,8 @@ class gmx():
         protein_file_out = path.join(gmx.files_path,dp_object.protein_filename).encode('unicode-escape')
         topol_file = path.join(gmx.files_path,gmx.topol_file).encode('string-escape')
         mdout_out = path.join(gmx.files_path,'mdout.mdp').encode('unicode-escape')
-        cmd_hydrogens = [("gmx grompp -f {0} -o {1} -c {2} -p {3} -po {4}".
-                          format(em_file_path,em_aux_out,conf_file,topol_file,mdout_out)),
-                         ("gmx trjconv -f {0} -o {1} -s {2}".
-                          format(conf_file,protein_file_out,em_aux_out.encode('string-escape')))]
+        cmd_hydrogens = [['gmx','grompp','-f',em_file_path,'-o',em_aux_out,'-c',conf_file,'-p',topol_file,'-po',mdout_out],
+                         ['gmx','trjconv','-f',conf_file,'-o',protein_file_out,'-s',em_aux_out.encode('string-escape')]]
         n = len(cmd_hydrogens)
         i = 0
         args = None        
@@ -129,7 +125,7 @@ class gmx():
                 args = '0'
                 if not path.isfile(path.join(gmx.files_path,gmx.em_aux_tpr_file)):
                     raise OSError('Falta el archivo em_aux')
-            p = subprocess.Popen(shlex.split(cmd_hydrogens[i]), universal_newlines=True,
+            p = subprocess.Popen(cmd_hydrogens[i], universal_newlines=True,
                                      stdin=subprocess.PIPE,stdout=subprocess.PIPE, stderr=subprocess.PIPE)                                                                
             out,err = p.communicate(args)                                
             if p.returncode:                    
@@ -164,13 +160,15 @@ class gmx():
         mdlog_out = path.join(gmx.gmx_path,'md.log').encode('unicode-escape')
         
         final_energy = float('inf')                
-        cmd_fitness = [("gmx grompp -v -f {0} -c {1} -o {2} -p {3} -po {4} -maxwarn 2".format(em_file_path, dockedpair_file, em_thread_tpr_out,topol_with_ligand_file_path,mdout_out)),
-                       "gmx mdrun -v -s {0} -o {1} -c {2} -e {3} -g {4}".format(em_thread_tpr_out.encode('string-escape'), traj_out, confoutgro_out, ener_out, mdlog_out)]
+        cmd_fitness = [['gmx','grompp','-v','-f',em_file_path,'-c',dockedpair_file,'-o',em_thread_tpr_out,
+                        '-p',topol_with_ligand_file_path,'-po',mdout_out,'-maxwarn','2'],
+                       ['gmx','mdrun','-v','-s',em_thread_tpr_out.encode('string-escape'),'-o',traj_out,
+                       '-c',confoutgro_out,'-e',ener_out,'-g',mdlog_out]]
         try:
             n = len(cmd_fitness)
             i = 0
             while(i<n):
-                p = subprocess.Popen(shlex.split(cmd_fitness[i]),
+                p = subprocess.Popen(cmd_fitness[i],
                                      universal_newlines=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)

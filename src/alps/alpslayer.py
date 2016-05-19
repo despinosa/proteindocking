@@ -6,8 +6,9 @@ from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
 from random import randint, random, sample
-from sys import maxint
+from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
+from traceback import format_exc
 
 
 class ALPSLayer(Thread):
@@ -97,5 +98,5 @@ class ALPSLayer(Thread):
                 self.iterate()
             self.copied.set()
             self.replaced.set()
-        except Exception as e:            
-            self.ex_queue.put(e)
+        except Exception as e:           
+            self.ex_queue.put(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))
