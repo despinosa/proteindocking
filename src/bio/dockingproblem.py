@@ -149,7 +149,7 @@ class DockingProblem(Thread):
         pair = DockedPair(self, arr)
         # print pair.lise_score
         # print pair.shift
-        return pair.free_energy() + exp(50 - pair.shift)
+        return pair.free_energy() + exp(pi*pair.shift)
 
     @abstractmethod
     def estimate_progress(self):

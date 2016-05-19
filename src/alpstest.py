@@ -44,13 +44,17 @@ def random_fitness(array):
 class ALPSTest(ALPS):
     """docstring for ALPSTest"""
     def __init__(self, n):
+        self.prev_gen = 0
+        self.prev_best = float('inf')
         super(ALPSTest, self).__init__()
         self.lower = np.full(n, -5.12)
         self.upper = np.full(n, 5.12)
         self.span = self.upper - self.lower
+        self.fitness_impl = rastrigin
         fibo3 = lambda: fibonacci(3)
         self.setup(35, 0.1, 0.8, 5, gen_limit, enhanced, fibo3,
-                   max_generations=666)
+                   max_generations=111)
+        self.log = open('log.txt', 'w+')
 
     def run(self):
         for lay in self.layers:
@@ -59,7 +63,14 @@ class ALPSTest(ALPS):
             lay.join()
 
     def fitness(self, arr):
-        return rastrigin(arr)
+        score = self.fitness_impl(arr)
+        if self.generation == self.prev_gen:
+            self.prev_best = min(self.prev_best, score)
+        else:
+            self.log.write('{0}\t,\t{1}\n'.format(self.prev_gen,
+                                                  self.prev_best))
+            self.prev_gen = self.generation
+        return score
 
 if __name__ == '__main__':
     from datetime import datetime
