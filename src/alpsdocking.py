@@ -18,8 +18,8 @@ class ALPSDocking(DockingProblem, ALPS):
         def config_file():
             f = open(path.join(preloaded_files_path,'files','config'), 'r')
             self.config_args = []
-            for i,line in enumerate(f):
-                self.config_args.append(line.split('=')[-1]) 
+            for line in f:
+                self.config_args.append(line.split('=')[-1])                 
             if(len(self.config_args) != 7):
                 raise Exception('Archivo de configuracion erroneo.')            
         super(ALPSDocking, self).__init__()        
@@ -61,10 +61,10 @@ class ALPSDocking(DockingProblem, ALPS):
         from os import path    
 
         docking.start()
-        start = datetime.now()
+        start = datetime.now()        
         stdout.write('Processing...\n')
         while docking.estimate_progress() < 1 - 1e-15:
-            progress = docking.estimate_progress() * 100
+            progress = docking.estimate_progress() * 100            
             if pb_queue is not None:
                 pb_queue.put(progress)
             # stdout.write('\rprogress: \t{0:04.2f} %'.

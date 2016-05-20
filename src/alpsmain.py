@@ -1,4 +1,3 @@
-import logging
 from sys import stdout
 from os import path    
 from datetime import datetime

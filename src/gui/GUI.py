@@ -22,7 +22,7 @@ class GUI(Toplevel):
             return
         Toplevel.__init__(self,master.root,height=400,width=700)        
         self.resizable(width=FALSE,height=FALSE)        
-        self.wm_title('Protein docking')
+        self.wm_title('Protein docking aaaaaa')
         self.center()
         self.DIR_OPTIONS = {}        
         self.DIR_OPTIONS['mustexist'] = True        
@@ -104,7 +104,9 @@ class GUI(Toplevel):
         self.run_docking.pack(side="bottom")      
         self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)          
         #Progress lavel
-        self.l_progress = Label(self, text="",padx=10,pady=10)        
+        self.progress = StringVar()
+        self.progress.set('')
+        self.l_progress = Label(self, textvariable=self.progress,padx=10,pady=10)        
         self.l_progress.pack(side="top")
         self.l_progress.place(x=500)
         self.lift()
@@ -205,11 +207,11 @@ class GUI(Toplevel):
             return False
 
         try:
-            if check_errors(): pass                
+            check_errors()
             msg = self.queue.get(0)
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
-            self.l_progress["text"] = '{0}%'.format(step_)
+            self.progress.set('{0}%'.format(step_))            
             self.after(100,self.process_queue)
         except ValueError:
             self.prog_bar.stop()
