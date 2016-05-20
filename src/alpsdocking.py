@@ -70,7 +70,7 @@ class ALPSDocking(DockingProblem, ALPS):
                 #format(progress))
             ex = docking.check_errors()
             if ex is not None:
-                raise ex
+                raise Exception(ex)
             #stdout.flush()
             sleep(2)
         # stdout.write('\n\n')
