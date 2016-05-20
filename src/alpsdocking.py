@@ -67,13 +67,13 @@ class ALPSDocking(DockingProblem, ALPS):
             progress = docking.estimate_progress() * 100            
             if pb_queue is not None:
                 pb_queue.put(progress)
-            # stdout.write('\rprogress: \t{0:04.2f} %'.
-            #     format(progress))
+            #stdout.write('\rprogress: \t{0:04.2f} %'.
+                #format(progress))
             ex = docking.check_errors()
             if ex is not None:
                 raise ex
-            # stdout.flush()
-            # sleep(2)
+            #stdout.flush()
+            sleep(2)
         # stdout.write('\n\n')
         docking.join()
         out_file = open(path.join(output_path,'info_best'),'w+')

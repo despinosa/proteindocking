@@ -17,12 +17,13 @@ from warnings import filterwarnings
 
 class GUI(Toplevel):
     def __init__(self,master,files_path):                    
+        self.TITLE = 'Protein docking'
         if not self.validate_gmx():
-            tkMessageBox.showinfo("Protein docking","Add gmx to environment variables")
+            tkMessageBox.showinfo(self.TITLE,"Add gmx to environment variables")
             return
         Toplevel.__init__(self,master.root,height=400,width=700)        
         self.resizable(width=FALSE,height=FALSE)        
-        self.wm_title('Protein docking aaaaaa')
+        self.wm_title(self.TITLE)
         self.center()
         self.DIR_OPTIONS = {}        
         self.DIR_OPTIONS['mustexist'] = True        
@@ -200,9 +201,9 @@ class GUI(Toplevel):
                 e = self.main.ex_queue.get(0)                
                 if self.logger == None:
                     logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
-                    self.logger = logging.getLogger('Protein docking')   
+                    self.logger = logging.getLogger(self.TITLE)   
                 self.logger.info(e)                
-                tkMessageBox.showinfo("Protein docking","Internal error")
+                tkMessageBox.showinfo(self.TITLE,"Internal error")
                 return True
             return False
 
@@ -212,13 +213,14 @@ class GUI(Toplevel):
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
             self.progress.set('{0}%'.format(step_))            
+            #self.update_idletasks()
             self.after(100,self.process_queue)
         except ValueError:
             self.prog_bar.stop()
-            tkMessageBox.showinfo("Protein docking",msg)
+            tkMessageBox.showinfo(self.TITLE,msg)
             self.destroy()                
         except Queue.Empty:
-            self.after(100, self.process_queue)
+            self.after(100, self.process_queue)        
 
     def validate_gmx(self):  
         try:          
