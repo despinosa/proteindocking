@@ -62,18 +62,19 @@ class ALPSDocking(DockingProblem, ALPS):
 
         docking.start()
         start = datetime.now()
+        stdout.write('Processing...\n')
         while docking.estimate_progress() < 1 - 1e-15:
             progress = docking.estimate_progress() * 100
             if pb_queue is not None:
                 pb_queue.put(progress)
-            stdout.write('\rprogress: \t{0:04.2f} %'.
-                format(progress))
+            # stdout.write('\rprogress: \t{0:04.2f} %'.
+            #     format(progress))
             ex = docking.check_errors()
             if ex is not None:
                 raise ex
-            stdout.flush()
-            sleep(2)
-        stdout.write('\n\n')
+            # stdout.flush()
+            # sleep(2)
+        # stdout.write('\n\n')
         docking.join()
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
@@ -153,4 +154,4 @@ if __name__ == "__main__":
         if logger == None:
             logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
             logger = logging.getLogger('Protein docking')
-        logger.info(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))
+        logger.info(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))            

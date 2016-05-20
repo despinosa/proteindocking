@@ -1,3 +1,4 @@
+import logging
 from sys import stdout
 from os import path    
 from datetime import datetime
@@ -26,13 +27,13 @@ class ALPSMain(Thread):
         self.output_path = output_path
         self.forcefield = forcefield        
         self.FILES_PATH = files_path
-        self.ex_queue = Queue()    
+        self.ex_queue = Queue()           
 
     def run(self):                
-        try:
+        try:                        
             docking = ALPSDocking(self.ligand_path, self.protein_path, self.cavities_path, self.itp_path, self.FILES_PATH, self.forcefield)        
             pair_file = docking._run_stdout(self.output_path,self.queue)
             self.queue.put("Docking complete.\nPDB file: {0}".format(pair_file))
-            cmd.load(pair_file)
+            cmd.load(pair_file)                
         except Exception as e:
-            self.ex_queue.put(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))      
+            self.ex_queue.put(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))                 

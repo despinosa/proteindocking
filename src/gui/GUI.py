@@ -12,6 +12,7 @@ from os import path
 from alpsmain import ALPSMain
 from Tkinter import * 
 from tkFileDialog import askopenfilename, askdirectory
+from warnings import filterwarnings
 
 
 class GUI(Toplevel):
@@ -34,6 +35,7 @@ class GUI(Toplevel):
         self.valid_cavity = 0
         self.valid_output = 0                            
         self.valid_ff = 0
+        self.logger = None
         self.forcefields = ['charmm27','gromos54a7_atb']                           
         #Labels
         self.l_protein_pdb = Label(self, text="Protein PDB file: ",padx=10,pady=10)
@@ -41,7 +43,7 @@ class GUI(Toplevel):
         self.l_ligand_itp = Label(self, text="Ligand ITP file: ",padx=10,pady=10)
         self.l_cavities = Label(self, text="Cavities PDB file: ",padx=10,pady=10)
         self.l_output = Label(self, text="Output path: ",padx=10,pady=10)
-        self.l_forcefield = Label(self, text="Forcefield: ",padx=10,pady=10)
+        self.l_forcefield = Label(self, text="Forcefield: ",padx=10,pady=10)        
         self.l_protein_pdb.pack(side="left")
         self.l_ligand_pdb.pack(side="left")
         self.l_ligand_itp.pack(side="left")
@@ -53,7 +55,7 @@ class GUI(Toplevel):
         self.l_ligand_itp.place(x=10,y=120)        
         self.l_cavities.place(x=10,y=170)  
         self.l_output.place(x=10,y=220)
-        self.l_forcefield.place(x=10,y=270)
+        self.l_forcefield.place(x=10,y=270)        
         #Buttons
         self.b_protein_pdb = Button(self,text="Choose file...",name="b_protein_pdb")
         self.b_protein_pdb.bind("<Button-1>",self.openFile)
@@ -101,8 +103,12 @@ class GUI(Toplevel):
         self.run_docking = Button(self,text="Start docking",name="run_docking",state=DISABLED)        
         self.run_docking.pack(side="bottom")      
         self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)          
-        self.logger = None
+        #Progress lavel
+        self.l_progress = Label(self, text="",padx=10,pady=10)        
+        self.l_progress.pack(side="top")
+        self.l_progress.place(x=500)
         self.lift()
+        filterwarnings('ignore')
     #Validations        
     def validate(self):                
         if(self.valid_protein and self.valid_ligand_pdb and self.valid_ligand_itp and self.valid_cavity and self.valid_output and self.valid_ff):            
@@ -116,7 +122,7 @@ class GUI(Toplevel):
         self.valid_ff = 1
         self.validate()
     #Events
-    def openFile(self,event):                
+    def openFile(self,event):                      
         self.OPTIONS['filetypes'] = ([('ITP files','.itp')] if self.b_ligand_itp == event.widget else [('PDB files','.pdb')])
         if(len(self.txt_protein_pdb.get(1.0,END)) > 0):            
             self.OPTIONS['initialdir'] = os.path.dirname(self.txt_protein_pdb.get(1.0,END))
@@ -193,7 +199,7 @@ class GUI(Toplevel):
                 if self.logger == None:
                     logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
                     self.logger = logging.getLogger('Protein docking')   
-                self.logger.info(e)
+                self.logger.info(e)                
                 tkMessageBox.showinfo("Protein docking","Internal error")
                 return True
             return False
@@ -203,6 +209,7 @@ class GUI(Toplevel):
             msg = self.queue.get(0)
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
+            self.l_progress["text"] = '{0}%'.format(step_)
             self.after(100,self.process_queue)
         except ValueError:
             self.prog_bar.stop()
@@ -213,10 +220,9 @@ class GUI(Toplevel):
 
     def validate_gmx(self):  
         try:          
-            cmd_gmx = ['gmx']        
-            p = subprocess.Popen(cmd_gmx, universal_newlines=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out,err = p.communicate()           
+            cmd_gmx = ['gmx','-version']        
+            p = subprocess.Popen(cmd_gmx, universal_newlines=True)
+            p.communicate()           
             if p.returncode:                    
                 raise Exception(str(p.returncode) + err)
             return True
