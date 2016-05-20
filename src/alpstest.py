@@ -44,7 +44,7 @@ def random_fitness(array):
 
 class ALPSTest(ALPS):
     """docstring for ALPSTest"""
-    def __init__(self, n, preloaded_files_path):
+    def __init__(self, preloaded_files_path, n=6):
         def config_file():
             f = open(path.join(preloaded_files_path,'files','config'), 'r')
             self.config_args = []
@@ -68,9 +68,8 @@ class ALPSTest(ALPS):
         max_generations = int(self.config_args[5])
         n_layers = int(self.config_args[6])
         fibo = lambda: fibonacci(aging_scheme_factor)
-        self.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
-                   gen_limit, enhanced, fibo, single_point, max_generations,
-                   n_layers)
+        self.setup(pop_size, mutate_rate, mating_rate, gen_limit, enhanced,
+                    fibo, single_point, max_generations, n_layers)
         self.log = open('log.txt', 'w+')
 
     def run(self):
@@ -92,7 +91,7 @@ class ALPSTest(ALPS):
 if __name__ == '__main__':
     from datetime import datetime
     from sys import argv
-    a = ALPSTest(int(argv[1]), argv[2])
+    a = ALPSTest(argv[1])
     start = datetime.now()
     a.run()
     print 'time: {0}\n'.format(datetime.now()-start)

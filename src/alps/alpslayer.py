@@ -5,6 +5,7 @@ from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
+from math import ceil, exp
 from random import randint, random, sample
 from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
@@ -52,12 +53,18 @@ class ALPSLayer(Thread):
     def iterate(self):
         def reproduce(pool):
             offspring = []
-            if len(pool) >= self.main.tourn_size:
-                for _ in repeat(None, self.main.reprod_cycles):
-                    tournament = sample(pool, self.main.tourn_size)
-                    parents = nsmallest(self.main.n_parents, tournament)
-                    for child in self.main.crossover(*parents):
-                        offspring.append(child) # n
+            pool_size = len(pool)
+            if pool_size < self.main.n_parents: return offspring
+            tourn_size = min(max(int(ceil(exp(self.main.generation %
+                                              self.max_age /
+                                              self.main.ln_sum))),
+                                 self.main.n_parents),
+                             pool_size)
+            for _ in repeat(None, self.main.reprod_cycles):
+                tournament = sample(pool, tourn_size)
+                parents = nsmallest(self.main.n_parents, tournament)
+                for child in self.main.crossover(*parents):
+                    offspring.append(child) # n
             return offspring
 
         def mutate(offspring):
@@ -99,4 +106,4 @@ class ALPSLayer(Thread):
             self.copied.set()
             self.replaced.set()
         except Exception as e:           
-            self.ex_queue.put(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))
+            self.ex_queue.put(e) # str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))

@@ -33,11 +33,10 @@ class ALPSDocking(DockingProblem, ALPS):
         max_generations = int(self.config_args[5])
         n_layers = int(self.config_args[6])
         fibo = lambda: fibonacci(aging_scheme_factor)
-
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path,
                              itp_path, forcefield, preloaded_files_path)
-        ALPS.setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
-                   gen_limit, enhanced, fibo, single_point, max_generations, n_layers)
+        ALPS.setup(self, pop_size, mutate_rate, mating_rate, gen_limit,
+                   enhanced, fibo, single_point, max_generations, n_layers)
                
 
     def estimate_progress(self):

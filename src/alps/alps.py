@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+    #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta, abstractmethod
@@ -6,6 +6,7 @@ from alpslayer import ALPSLayer
 from chromosome import Chromosome
 from definitions.agingscheme import linear
 from definitions.crossover import single_point
+from math import log
 
 
 class ALPS(object):
@@ -17,13 +18,13 @@ class ALPS(object):
         super(ALPS, self).__init__()
         self.__class__.instances += 1
 
-    def setup(self, pop_size, mutate_rate, mating_rate, tourn_size,
-              stop_condition, elitism, aging_scheme, crossover=single_point,
+    def setup(self, pop_size, mutate_rate, mating_rate, stop_condition,
+              elitism, aging_scheme, crossover=single_point,
               max_generations=50, n_layers=5, n_parents=2):
         self.name = '{0}{1}'.format(self.__class__.__name__.lower(),
                                     self.instances)
         self.pop_size = pop_size
-        self.tourn_size = tourn_size
+        self.ln_sum = log(self.pop_size) + log(log(self.pop_size))
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
         self.crossover = lambda *a, **kw: crossover(self, *a, **kw)
         self.elitism = lambda *a, **kw: elitism(self, *a, **kw)

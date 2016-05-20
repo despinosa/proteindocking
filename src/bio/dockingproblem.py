@@ -56,7 +56,6 @@ class DockingProblem(Thread):
                 residue.id = (' ', residue.id[1], ' ')
                 self.cavities_chain.add(residue)
             self.cavities_chain.id = 'C'
-
             self.original = Structure('dockedpair')
             self.original.add(self.protein_model)
             self.original[0].add(self.ligand_chain)
@@ -147,7 +146,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(10 * pair.shift / pair.cavity.bfactor)
+        return pair.free_energy() # + exp(10 * pair.shift / pair.cavity.bfactor)
 
     @abstractmethod
     def estimate_progress(self):
