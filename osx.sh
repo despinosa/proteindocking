@@ -5,7 +5,7 @@ if ["$(mount | grep /tmp/ramdisk)" = ""]; then
     mount -t hfs $RAMDEV /tmp/ramdisk
 fi
 export TMPDIR=/tmp/ramdisk
-python -W ignore src/alpsdocking.py files/tryp_benz/benzamidine.pdb files/tryp_benz/trypsin.pdb files/tryp_benz/trypsin_cavs.pdb files/tryp_benz/benzamidine.itp 1 .
+python -W ignore src/alpsdocking.py files/5byy/benzodiazepin.pdb files/5byy/kinase.pdb files/5byy/cavs_kinase.pdb files/5byy/benzodiazepin.itp 1 .
 open ./best*.pdb &
-umount /tmp/ramdisk/
-hdiutil detach $RAMDEV
+# umount /tmp/ramdisk/
+# hdiutil detach $RAMDEV

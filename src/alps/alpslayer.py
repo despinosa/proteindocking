@@ -55,9 +55,8 @@ class ALPSLayer(Thread):
             offspring = []
             pool_size = len(pool)
             if pool_size < self.main.n_parents: return offspring
-            tourn_size = min(max(int(ceil(exp(self.main.generation %
-                                              self.max_age /
-                                              self.main.ln_sum))),
+            to_takeover = self.main.generation % self.max_age
+            tourn_size = min(max(int(ceil(exp(self.main.ln_sum / to_takeover))),
                                  self.main.n_parents),
                              pool_size)
             for _ in repeat(None, self.main.reprod_cycles):

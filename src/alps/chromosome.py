@@ -5,8 +5,9 @@ import numpy as np
 from threading import Lock
 # import numpy as np
 
-sp_rand = np.random.random
-sp_randint = np.random.randint
+np_rand = np.random.random
+np_randint = np.random.randint
+np_randuni = np.random.uniform
 
 class Chromosome(np.ndarray):
     def __new__(cls, main, birth, pieces=None):
@@ -14,12 +15,17 @@ class Chromosome(np.ndarray):
         if pieces is not None:
             arr = np.concatenate([piece[:] for piece in pieces]).view(cls)
             if arr.size != main.lower.size:
-                raise TypeError("longitud incompatible: %d/%d".
+                raise TypeError('longitud incompatible: %d/%d'.
                                 format(arr.size, main.lower.size))
         else:
-            arr = sp_rand((main.lower.size,)).view(cls)
-            arr *= main.span
-            arr += main.lower
+            arr = np.ndarray(shape=(main.span.size,), dtype='f')
+            print main.lower.size, main.upper.size, arr.size
+            for i in xrange(arr.size):
+                arr[i] = np_randuni(main.lower[i], main.upper[i])
+            arr = arr.view(cls)
+            # arr = sp_rand((main.lower.size,)).view(cls)
+            # arr *= main.span
+            # arr += main.lower
         arr.main = main
         arr.birth = birth
         arr.score = None
