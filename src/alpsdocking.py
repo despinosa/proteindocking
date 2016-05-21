@@ -50,7 +50,7 @@ class ALPSDocking(DockingProblem, ALPS):
 
     run = solve
 
-    def _run_stdout(docking, output_path,pb_queue):    
+    def _run_pymol(docking, output_path,pb_queue):    
         from datetime import datetime
         from sys import stdout,exc_info
         from time import sleep    
@@ -71,14 +71,13 @@ class ALPSDocking(DockingProblem, ALPS):
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
         pair = DockedPair(docking, docking.best)
-        best_path = path.join(output_path,
+        docking.pair_file = path.join(output_path,
                                'best_{0}_{1}.pdb'.format(docking.protein_filename.
                                         split('.')[0], docking.ligand_id))
-        pair.to_file(best_path,
+        pair.to_file(docking.pair_file,
                      Select())
         out_file.write('mejor:\t{0}\n\n'.format(docking.best))
-        out_file.close()      
-        return best_path       
+        out_file.close()
 
     def _run_pbar(docking, output_path):
         from datetime import datetime
@@ -139,8 +138,7 @@ if __name__ == "__main__":
         output_path) = argv[1:7]
     logger = None    
     try:
-        docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
-        #docking._run_stdout(output_path,None)
+        docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))        
         #docking._run_silent(output_path)
         docking._run_pbar(output_path)
     except ALPSException as ae:
