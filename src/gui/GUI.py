@@ -21,7 +21,7 @@ class GUI(Toplevel):
         if not self.validate_gmx():
             tkMessageBox.showinfo(self.TITLE,"Add gmx to environment variables")
             return
-        Toplevel.__init__(self,master.root,height=400,width=700)        
+        Toplevel.__init__(self,master.root,height=400,width=750)        
         self.resizable(width=FALSE,height=FALSE)        
         self.wm_title(self.TITLE)
         self.center()
@@ -51,12 +51,12 @@ class GUI(Toplevel):
         self.l_cavities.pack(side="left")
         self.l_output.pack(side="left")
         self.l_forcefield.pack(side="left")
-        self.l_protein_pdb.place(x=10,y=30)        
-        self.l_ligand_pdb.place(x=10,y=70)        
-        self.l_ligand_itp.place(x=10,y=120)        
-        self.l_cavities.place(x=10,y=170)  
-        self.l_output.place(x=10,y=220)
-        self.l_forcefield.place(x=10,y=270)        
+        self.l_protein_pdb.place(x=10,y=35)        
+        self.l_ligand_pdb.place(x=10,y=75)        
+        self.l_ligand_itp.place(x=10,y=125)        
+        self.l_cavities.place(x=10,y=175)  
+        self.l_output.place(x=10,y=225)
+        self.l_forcefield.place(x=10,y=275)        
         #Buttons
         self.b_protein_pdb = Button(self,text="Choose file...",name="b_protein_pdb")
         self.b_protein_pdb.bind("<Button-1>",self.openFile)
@@ -73,27 +73,27 @@ class GUI(Toplevel):
         self.b_ligand_itp.pack(side="right")
         self.b_cavities.pack(side="right")
         self.b_output.pack(side="right")
-        self.b_protein_pdb.place(x=550,y=32)
-        self.b_ligand_pdb.place(x=550,y=72)
-        self.b_ligand_itp.place(x=550,y=122)
-        self.b_cavities.place(x=550,y=172)
-        self.b_output.place(x=550,y=222)
+        self.b_protein_pdb.place(x=620,y=37)
+        self.b_ligand_pdb.place(x=620,y=77)
+        self.b_ligand_itp.place(x=620,y=127)
+        self.b_cavities.place(x=620,y=177)
+        self.b_output.place(x=620,y=227)
         #Textboxes
-        self.txt_protein_pdb = Text(self,height=1, width=70,stat=DISABLED)
-        self.txt_ligand_pdb = Text(self,height=1, width=70,state=DISABLED)
-        self.txt_ligand_itp = Text(self,height=1, width=70,state=DISABLED)
-        self.txt_cavities = Text(self,height=1, width=70,state=DISABLED)
-        self.txt_output = Text(self,height=1,width=70,state=DISABLED)
+        self.txt_protein_pdb = Text(self,height=1, width=75,stat=DISABLED)
+        self.txt_ligand_pdb = Text(self,height=1, width=75,state=DISABLED)
+        self.txt_ligand_itp = Text(self,height=1, width=75,state=DISABLED)
+        self.txt_cavities = Text(self,height=1, width=75,state=DISABLED)
+        self.txt_output = Text(self,height=1,width=75,state=DISABLED)
         self.txt_protein_pdb.pack(side="top")
         self.txt_ligand_pdb.pack(side="top")
         self.txt_ligand_itp.pack(side="top")
         self.txt_cavities.pack(side="top")
         self.txt_output.pack(side="top")
-        self.txt_protein_pdb.place(x=110,y=38)
-        self.txt_ligand_pdb.place(x=110,y=78)
-        self.txt_ligand_itp.place(x=110,y=128)
-        self.txt_cavities.place(x=110,y=178)
-        self.txt_output.place(x=110,y=228)
+        self.txt_protein_pdb.place(x=110,y=43)
+        self.txt_ligand_pdb.place(x=110,y=83)
+        self.txt_ligand_itp.place(x=110,y=133)
+        self.txt_cavities.place(x=110,y=183)
+        self.txt_output.place(x=110,y=233)
         #Combobox
         self.cb_forcefields = ttk.Combobox(self,state="readonly")
         self.cb_forcefields.bind("<<ComboboxSelected>>",self.validate_ff)
@@ -104,12 +104,12 @@ class GUI(Toplevel):
         self.run_docking = Button(self,text="Start docking",name="run_docking",state=DISABLED)        
         self.run_docking.pack(side="bottom")      
         self.run_docking.place(x=self.size[0]/2 - 50,y=self.size[1] - 50)          
-        #Progress lavel
+        #Progress label
         self.progress = StringVar()
         self.progress.set('')
         self.l_progress = Label(self, textvariable=self.progress,padx=10,pady=10)        
         self.l_progress.pack(side="top")
-        self.l_progress.place(x=500)
+        self.l_progress.place(x=520)
         self.lift()
         filterwarnings('ignore')
     #Validations        
@@ -202,18 +202,17 @@ class GUI(Toplevel):
                 if self.logger == None:
                     logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)    
                     self.logger = logging.getLogger(self.TITLE)   
-                self.logger.info(e)                
+                self.logger.info(e)       
                 tkMessageBox.showinfo(self.TITLE,"Internal error")
                 return True
             return False
 
         try:
-            check_errors()
+            if check_errors(): return
             msg = self.queue.get(0)
             step_ = float(msg)                        
             self.prog_bar["value"] = step_
-            self.progress.set('{0}%'.format(step_))            
-            #self.update_idletasks()
+            self.progress.set('{0}%'.format(step_))                        
             self.after(100,self.process_queue)
         except ValueError:
             self.prog_bar.stop()
@@ -230,5 +229,5 @@ class GUI(Toplevel):
             if p.returncode:                    
                 raise Exception(str(p.returncode) + err)
             return True
-        except Exception as e:            
+        except Exception:            
             return False

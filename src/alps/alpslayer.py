@@ -9,8 +9,7 @@ from math import ceil, exp
 from random import randint, random, sample
 from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
-from traceback import format_exc
-
+from traceback import format_exception
 
 class ALPSLayer(Thread):
     def __init__(self, main, i, max_age, prev_layer=None, next_layer=None):
@@ -104,5 +103,6 @@ class ALPSLayer(Thread):
                 self.iterate()
             self.copied.set()
             self.replaced.set()
-        except Exception as e:           
-            self.ex_queue.put(e) # str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = exc_info()
+            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)))            

@@ -8,6 +8,7 @@ from definitions.agingscheme import linear
 from definitions.crossover import single_point
 from math import log
 
+class ALPSException(Exception): pass
 
 class ALPS(object):
     __metaclass__ = ABCMeta

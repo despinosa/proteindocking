@@ -3,7 +3,6 @@
 
 import numpy as np
 from threading import Lock
-# import numpy as np
 
 np_rand = np.random.random
 np_randint = np.random.randint
@@ -18,12 +17,11 @@ class Chromosome(np.ndarray):
                 raise TypeError('longitud incompatible: %d/%d'.
                                 format(arr.size, main.lower.size))
         else:
-            arr = np.ndarray(shape=(main.span.size,), dtype='f')
-            print main.lower.size, main.upper.size, arr.size
+            arr = np.ndarray(shape=(main.span.size,), dtype='f')            
             for i in xrange(arr.size):
                 arr[i] = np_randuni(main.lower[i], main.upper[i])
             arr = arr.view(cls)
-            # arr = sp_rand((main.lower.size,)).view(cls)
+            # arr = np_rand((main.lower.size,)).view(cls)
             # arr *= main.span
             # arr += main.lower
         arr.main = main

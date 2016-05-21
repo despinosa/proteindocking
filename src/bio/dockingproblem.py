@@ -146,7 +146,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() # + exp(10 * pair.shift / pair.cavity.bfactor)
+        return pair.free_energy() + exp(10 * pair.shift / pair.cavity.bfactor)
 
     @abstractmethod
     def estimate_progress(self):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from alps.alps import ALPS
+from alps.alps import ALPS, ALPSException
 from alps.definitions.crossover import single_point
 from alps.definitions.agingscheme import fibonacci
 from alps.definitions.selection import enhanced
@@ -10,20 +10,18 @@ from bio.dockedpair import DockedPair
 from bio.dockingproblem import DockingProblem
 from Bio.PDB.PDBIO import Select
 from os import path
-import Queue
 
 class ALPSDocking(DockingProblem, ALPS):
     def __init__(self, ligand_path, protein_path, cavities_path, itp_path, preloaded_files_path,
                  forcefield):        
+        super(ALPSDocking, self).__init__()  
         def config_file():
             f = open(path.join(preloaded_files_path,'files','config'), 'r')
             self.config_args = []
             for line in f:
                 self.config_args.append(line.split('=')[-1])                 
-            if(len(self.config_args) != 7):
-                raise Exception('Archivo de configuracion erroneo.')            
-        super(ALPSDocking, self).__init__()        
-        self.ex_queue = Queue.Queue() 
+            if(len(self.config_args) is not 7):
+                raise Exception('Archivo de configuracion erroneo.')                                
         config_file()
         aging_scheme_factor = int(self.config_args[0])
         pop_size = int(self.config_args[1])
@@ -45,7 +43,7 @@ class ALPSDocking(DockingProblem, ALPS):
     def check_errors(self):        
         for layer in self.layers:
             if not layer.ex_queue.empty():                
-                return layer.ex_queue.get()
+                return layer.ex_queue.get(0)
 
     def solve(self):
         self.start_layers() 
@@ -55,7 +53,7 @@ class ALPSDocking(DockingProblem, ALPS):
 
     def _run_stdout(docking, output_path,pb_queue):    
         from datetime import datetime
-        from sys import stdout
+        from sys import stdout,exc_info
         from time import sleep    
         from os import path    
 
@@ -65,16 +63,12 @@ class ALPSDocking(DockingProblem, ALPS):
         while docking.estimate_progress() < 1 - 1e-15:
             progress = docking.estimate_progress() * 100            
             if pb_queue is not None:
-                pb_queue.put(progress)
-            #stdout.write('\rprogress: \t{0:04.2f} %'.
-                #format(progress))
+                pb_queue.put(progress)            
             ex = docking.check_errors()
-            if ex is not None:
-                raise Exception(ex)
-            #stdout.flush()
-            sleep(2)
-        # stdout.write('\n\n')
-        docking.join()
+            if ex is not None:                
+                raise Exception(ex)            
+            sleep(2)        
+        docking.join()        
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
         pair = DockedPair(docking, docking.best)
@@ -99,8 +93,8 @@ class ALPSDocking(DockingProblem, ALPS):
         while docking.estimate_progress() < 1 - 1e-15:
             pbar.update(docking.estimate_progress() * 100)
             ex = docking.check_errors()
-            if ex is not None:
-                raise ex
+            if ex is not None:                
+                raise ALPSException(ex)
         pbar.finish()
         docking.join()
         out_file = open(path.join(output_path,'info_best'),'w+')
@@ -133,24 +127,31 @@ class ALPSDocking(DockingProblem, ALPS):
 
 if __name__ == "__main__":
     from sys import argv, exc_info
+    from alps.alps import ALPSException
     from alps.definitions.agingscheme import fibonacci
     from alps.definitions.selection import enhanced
     from alps.definitions.stopcondition import gen_limit
     from bio.dockedpair import DockedPair
     from datetime import datetime
-    from traceback import format_exc    
+    from traceback import format_exception
     import logging        
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
         output_path) = argv[1:7]
-    logger = None
+    logger = None    
     try:
         docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))
         #docking._run_stdout(output_path,None)
         #docking._run_silent(output_path)
-        docking._run_pbar(output_path)        
-    except Exception as e:
+        docking._run_pbar(output_path)
+    except ALPSException as ae:
         if logger == None:
             logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
-            logger = logging.getLogger('Protein docking')
-        logger.info(str(e)+'\n'+format_exc()+'\n'+str(exc_info()[0]))            
+            logger = logging.getLogger('Protein docking')                
+        logger.info(ae)
+    except Exception as e:  
+        exc_type, exc_value, exc_traceback = exc_info()        
+        if logger == None:
+            logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
+            logger = logging.getLogger('Protein docking')                
+        logger.info(repr(format_exception(exc_type, exc_value,exc_traceback)))
