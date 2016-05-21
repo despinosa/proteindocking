@@ -53,10 +53,10 @@ class ALPSLayer(Thread):
         def reproduce(pool):
             offspring = []
             pool_size = len(pool)
-            if pool_size < self.main.n_parents: return offspring
-            to_takeover = self.main.generation % self.max_age
+            if pool_size < self.main.n_parents*2: return offspring
+            to_takeover = self.main.generation % self.max_age + 1
             tourn_size = min(max(int(ceil(exp(self.main.ln_sum / to_takeover))),
-                                 self.main.n_parents),
+                                 self.main.n_parents * 2),
                              pool_size)
             for _ in repeat(None, self.main.reprod_cycles):
                 tournament = sample(pool, tourn_size)

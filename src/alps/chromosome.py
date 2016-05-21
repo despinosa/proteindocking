@@ -76,10 +76,10 @@ class Chromosome(np.ndarray):
         return self.score
 
     def mutate(self):
-        idx = sp_randint(0, self.size)
+        idx = np_randint(0, self.size)
         with self.lock:
             self.flags.writeable = True
-            self[idx] = self.main.lower[idx] + sp_rand()*(self.main.upper[idx]-
+            self[idx] = self.main.lower[idx] + np_rand()*(self.main.upper[idx]-
                                                           self.main.lower[idx])
             self.flags.writeable = False
             self.hash = hash(self.data)

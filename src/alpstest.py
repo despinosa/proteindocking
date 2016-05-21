@@ -29,7 +29,7 @@ def levi(array):
 def easom(array):
     x = array[0]
     y = array[1]
-    return (-1)*cos(x)*cos(y)*exp(-(((x-pi)**2) + ((y-pi)**2)))
+    return -cos(x) * cos(y) * exp(-(x-pi)**2 - (y-pi)**2)
 
 def rastrigin(array):
     A = 10
@@ -55,10 +55,10 @@ class ALPSTest(ALPS):
         self.prev_gen = 0
         self.prev_best = float('inf')
         super(ALPSTest, self).__init__()
-        self.lower = np.full(n, -5.12)
-        self.upper = np.full(n, 5.12)
+        self.lower = np.full(n, -100)
+        self.upper = np.full(n, 100)
         self.span = self.upper - self.lower
-        self.fitness_impl = rastrigin
+        self.fitness_impl = easom
         config_file()
         aging_scheme_factor = int(self.config_args[0])
         pop_size = int(self.config_args[1])
