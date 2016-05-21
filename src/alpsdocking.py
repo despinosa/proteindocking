@@ -20,16 +20,15 @@ class ALPSDocking(DockingProblem, ALPS):
             self.config_args = []
             for line in f:
                 self.config_args.append(line.split('=')[-1])                 
-            if(len(self.config_args) is not 7):
+            if(len(self.config_args) is not 6):
                 raise Exception('Archivo de configuracion erroneo.')                                
         config_file()
         aging_scheme_factor = int(self.config_args[0])
         pop_size = int(self.config_args[1])
         mutate_rate = float(self.config_args[2])
-        mating_rate = float(self.config_args[3])
-        tourn_size = int(self.config_args[4])
-        max_generations = int(self.config_args[5])
-        n_layers = int(self.config_args[6])
+        mating_rate = float(self.config_args[3])        
+        max_generations = int(self.config_args[4])
+        n_layers = int(self.config_args[5])
         fibo = lambda: fibonacci(aging_scheme_factor)
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path,
                              itp_path, forcefield, preloaded_files_path)
@@ -154,4 +153,4 @@ if __name__ == "__main__":
         if logger == None:
             logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
             logger = logging.getLogger('Protein docking')                
-        logger.info(repr(format_exception(exc_type, exc_value,exc_traceback)))
+        logger.info(repr(format_exception(exc_type, exc_value,exc_traceback)) + repr(e))

@@ -105,4 +105,4 @@ class ALPSLayer(Thread):
             self.replaced.set()
         except Exception as e:
             exc_type, exc_value, exc_traceback = exc_info()
-            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)))            
+            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)) + repr(e))            
