@@ -3,7 +3,7 @@
 
 from alps.alps import ALPS, ALPSException
 from alps.definitions.crossover import single_point
-from alps.definitions.agingscheme import fibonacci
+from alps.definitions.agingscheme import *
 from alps.definitions.selection import enhanced
 from alps.definitions.stopcondition import gen_limit
 from bio.dockedpair import DockedPair
@@ -27,10 +27,10 @@ class ALPSDocking(DockingProblem, ALPS):
         pop_size = int(self.config_args[1])
         mutate_rate = float(self.config_args[2])
         mating_rate = float(self.config_args[3])
-        tourn_size = int(self.config_args[4])
+        aging_scheme = eval(self.config_args[4])
         max_generations = int(self.config_args[5])
         n_layers = int(self.config_args[6])
-        fibo = lambda: fibonacci(aging_scheme_factor)
+        fibo = lambda: aging_scheme(aging_scheme_factor)
         DockingProblem.setup(self, ligand_path, protein_path, cavities_path,
                              itp_path, forcefield, preloaded_files_path)
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, gen_limit,

@@ -5,7 +5,7 @@ from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
-from math import ceil, exp
+from math import exp
 from random import randint, random, sample
 from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
@@ -35,6 +35,7 @@ class ALPSLayer(Thread):
     def redistribute(self):
         if self.prev_layer is None:
             self.main.generation += 1
+            self.main.remaining_gens -= 1
             if self.main.generation % self.max_age == 0:
                 while len(self.population) > 0:
                     insort(self.next_layer.population, self.population.pop())
@@ -53,10 +54,12 @@ class ALPSLayer(Thread):
         def reproduce(pool):
             offspring = []
             pool_size = len(pool)
-            if pool_size < self.main.n_parents*2: return offspring
-            to_takeover = self.main.generation % self.max_age + 1
-            tourn_size = min(max(int(ceil(exp(self.main.ln_sum / to_takeover))),
-                                 self.main.n_parents * 2),
+            # tourn_size = 5
+            # if pool_size < tourn_size: return offspring
+            if pool_size < self.main.n_parents: return offspring
+            to_takeover = self.main.remaining_gens - self.max_age**2 + 1
+            tourn_size = min(max(int(round(exp(self.main.ln_sum/to_takeover))),
+                                 self.main.n_parents),
                              pool_size)
             for _ in repeat(None, self.main.reprod_cycles):
                 tournament = sample(pool, tourn_size)
@@ -105,4 +108,4 @@ class ALPSLayer(Thread):
             self.replaced.set()
         except Exception as e:
             exc_type, exc_value, exc_traceback = exc_info()
-            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)))            
+            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)))

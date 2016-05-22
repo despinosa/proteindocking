@@ -33,7 +33,8 @@ class ALPS(object):
         self.preserve = int((1-mating_rate) * pop_size)
         self.reprod_cycles = int(mating_rate * pop_size / 2)
         self.n_parents = n_parents
-        self.max_generations = max_generations        
+        self.max_generations = max_generations
+        self.remaining_gens = self.max_generations
         self.generation = 0
         age_limits = aging_scheme()
         self.layers = [ALPSLayer(self, i, age_limits.next())

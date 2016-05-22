@@ -17,13 +17,13 @@ class Chromosome(np.ndarray):
                 raise TypeError('longitud incompatible: %d/%d'.
                                 format(arr.size, main.lower.size))
         else:
-            arr = np.ndarray(shape=(main.span.size,), dtype='f')            
-            for i in xrange(arr.size):
-                arr[i] = np_randuni(main.lower[i], main.upper[i])
-            arr = arr.view(cls)
-            # arr = np_rand((main.lower.size,)).view(cls)
-            # arr *= main.span
-            # arr += main.lower
+            # arr = np.ndarray(shape=(main.span.size,), dtype='f')            
+            # for i in xrange(arr.size):
+            #     arr[i] = np_randuni(main.lower[i], main.upper[i])
+            # arr = arr.view(cls)
+            arr = np_rand((main.span.size,)).view(cls)
+            arr *= main.span
+            arr += main.lower
         arr.main = main
         arr.birth = birth
         arr.score = None

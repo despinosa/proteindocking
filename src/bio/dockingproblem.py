@@ -124,9 +124,9 @@ class DockingProblem(Thread):
     def encode(self):
         """Codifica el problema en un arreglo de longitud 6.
 
-        Se construye una _ruleta_ de selección para determinar la
-        cavidad a probar en una solución propuesta. También se definen
-        los límites superior e inferior de cada posición del arreglo.
+        Se construye una ruleta de selección para determinar la cavidad
+        a probar en una solución propuesta. También se definen los
+        límites superior e inferior de cada posición del arreglo.
 
         arr[0]  ~   Valor del tiro de la _ruleta_ de cavidades.
         arr[1:2]~   Ángulos de rotación del ligando.
@@ -146,7 +146,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(10 * pair.shift / pair.cavity.bfactor)
+        return pair.free_energy() + exp(pi*pair.shift - pair.cavity.bfactor)
 
     @abstractmethod
     def estimate_progress(self):
