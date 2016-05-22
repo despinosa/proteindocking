@@ -57,9 +57,9 @@ class ALPSLayer(Thread):
             # tourn_size = 5
             # if pool_size < tourn_size: return offspring
             if pool_size < self.main.n_parents: return offspring
-            to_takeover = self.main.remaining_gens - self.max_age**2 + 1
-            tourn_size = min(max(int(round(exp(self.main.ln_sum/to_takeover))),
-                                 self.main.n_parents),
+            to_takeover = self.main.remaining_gens/self.max_age + 1
+            tourn_size = min(int(round(exp(self.main.ln_sum / to_takeover) *
+                                 self.main.n_parents)),
                              pool_size)
             for _ in repeat(None, self.main.reprod_cycles):
                 tournament = sample(pool, tourn_size)
@@ -108,4 +108,4 @@ class ALPSLayer(Thread):
             self.replaced.set()
         except Exception as e:
             exc_type, exc_value, exc_traceback = exc_info()
-            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)))
+            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)) + repr(e))            
