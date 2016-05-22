@@ -25,7 +25,6 @@ class ALPS(object):
         self.name = '{0}{1}'.format(self.__class__.__name__.lower(),
                                     self.instances)
         self.pop_size = pop_size
-        self.ln_sum = log(self.pop_size) + log(log(self.pop_size))
         self.stop_condition = lambda *a, **kw: stop_condition(self, *a, **kw)
         self.crossover = lambda *a, **kw: crossover(self, *a, **kw)
         self.elitism = lambda *a, **kw: elitism(self, *a, **kw)

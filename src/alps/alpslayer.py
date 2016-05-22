@@ -5,7 +5,7 @@ from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
-from math import exp
+from math import exp, log
 from random import randint, random, sample
 from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
@@ -19,8 +19,9 @@ class ALPSLayer(Thread):
         self.max_age = max_age
         self.prev_layer = prev_layer
         self.next_layer = next_layer
-        to_takeover = exp(self.main.max_generations / self.max_age)
-        self.tourn_size = int(round(exp(self.main.ln_sum / to_takeover) *
+        ln_sum = log(self.pop_size) + log(log(self.pop_size))
+        to_takeover = (self.main.max_generations / self.max_age) ** 2
+        self.tourn_size = int(round(exp(ln_sum / to_takeover) * 
                                     self.main.n_parents))
         self.population = []
         self.copied = Event()
