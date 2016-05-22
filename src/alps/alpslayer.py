@@ -19,6 +19,9 @@ class ALPSLayer(Thread):
         self.max_age = max_age
         self.prev_layer = prev_layer
         self.next_layer = next_layer
+        to_takeover = exp(self.main.max_generations / self.max_age)
+        self.tourn_size = int(round(exp(self.main.ln_sum / to_takeover) *
+                                    self.main.n_parents))
         self.population = []
         self.copied = Event()
         self.copied.clear()
@@ -57,12 +60,8 @@ class ALPSLayer(Thread):
             # tourn_size = 5
             # if pool_size < tourn_size: return offspring
             if pool_size < self.main.n_parents: return offspring
-            to_takeover = self.main.remaining_gens/self.max_age + 1
-            tourn_size = min(int(round(exp(self.main.ln_sum / to_takeover) *
-                                 self.main.n_parents)),
-                             pool_size)
             for _ in repeat(None, self.main.reprod_cycles):
-                tournament = sample(pool, tourn_size)
+                tournament = sample(pool, min(self.tourn_size, pool_size))
                 parents = nsmallest(self.main.n_parents, tournament)
                 for child in self.main.crossover(*parents):
                     offspring.append(child) # n
