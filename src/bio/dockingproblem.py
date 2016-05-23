@@ -15,6 +15,7 @@ from os import mkdir,path,remove,getcwd,makedirs,environ
 from re import match, search
 from shutil import rmtree, copy, copytree
 from threading import Thread
+from uuid import uuid4
 import numpy as np
 
 
@@ -119,7 +120,8 @@ class DockingProblem(Thread):
         prepare_wdfiles()
         gmx.preprocess(self)                      
         load_data()
-        self.encode()        
+        self.encode()
+        self.log = open('log_{}.txt'.format(uuid4()), 'w+')
 
     def encode(self):
         """Codifica el problema en un arreglo de longitud 6.
@@ -144,9 +146,16 @@ class DockingProblem(Thread):
         self.upper = np.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
         self.span = self.upper - self.lower
 
-    def fitness(self, arr):        
+    def fitness(self, arr):
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(pi*pair.shift - pair.cavity.bfactor)
+        score = pair.free_energy() + exp(pi*pair.shift - pair.cavity.bfactor)
+        if self.generation == self.prev_gen:
+            self.prev_best = min(self.prev_best, score)
+        else:
+            self.log.write('{0}\t,\t{1}\n'.format(self.prev_gen,
+                                                  self.prev_best))
+            self.prev_gen = self.generation
+        return score
 
     @abstractmethod
     def estimate_progress(self):
