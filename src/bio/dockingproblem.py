@@ -123,7 +123,8 @@ class DockingProblem(Thread):
         self.encode()
         self.prev_gen = 0
         self.prev_best = float('inf')
-        self.log = open('log_{}.txt'.format(uuid4()), 'w+')
+        self.uuid = uuid4()
+        self.log = open('log_{}.txt'.format(self.uuid), 'w+')
 
     def encode(self):
         """Codifica el problema en un arreglo de longitud 6.

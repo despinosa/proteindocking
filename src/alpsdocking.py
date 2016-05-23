@@ -69,12 +69,12 @@ class ALPSDocking(DockingProblem, ALPS):
                 raise Exception(ex)            
             sleep(2)        
         docking.join()        
-        out_file = open(path.join(output_path,'info_best'),'w+')
+        out_file = open(path.join(output_path,'info_{0}'.format(docking.uuid)),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
         pair = DockedPair(docking, docking.best)
         docking.pair_file = path.join(output_path,
-                               'best_{0}_{1}.pdb'.format(docking.protein_filename.
-                                        split('.')[0], docking.ligand_id))
+                               'best_{0}_{1}_{2}.pdb'.format(docking.protein_filename.
+                                        split('.')[0], docking.ligand_id, docking.uuid))
         pair.to_file(docking.pair_file,
                      Select())
         out_file.write('mejor:\t{0}\n\n'.format(docking.best))
@@ -96,12 +96,12 @@ class ALPSDocking(DockingProblem, ALPS):
                 raise ALPSException(ex)
         pbar.finish()
         docking.join()
-        out_file = open(path.join(output_path,'info_best'),'w+')
+        out_file = open(path.join(output_path,'info_{0}'.format(docking.uuid)),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
         pair = DockedPair(docking, docking.best)
         best_path = path.join(output_path,
-                               'best_{0}_{1}.pdb'.format(docking.protein_filename.
-                                        split('.')[0], docking.ligand_id))
+                               'best_{0}_{1}_{2}.pdb'.format(docking.protein_filename.
+                                        split('.')[0], docking.ligand_id, docking.uuid))
         pair.to_file(best_path,
                      Select())
         out_file.write('mejor:\t{0}\n\n'.format(docking.best))
@@ -114,12 +114,12 @@ class ALPSDocking(DockingProblem, ALPS):
         docking.start()
         start = datetime.now()  
         docking.join()
-        out_file = open(path.join(output_path,'info_best'),'w+')
+        out_file = open(path.join(output_path,'info_{0}'.format(docking.uuid)),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
         pair = DockedPair(docking, docking.best)
         pair.to_file(path.join(output_path,
-                               'best_{0}_{1}.pdb'.format(docking.protein_filename.
-                                        split('.')[0], docking.ligand_id)),
+                               'best_{0}_{1}_{2}.pdb'.format(docking.protein_filename.
+                                        split('.')[0], docking.ligand_id, docking.uuid)),
                      Select())
         out_file.write('mejor:\t{0}\n\n'.format(docking.best))
         out_file.close()
