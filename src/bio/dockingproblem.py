@@ -45,22 +45,9 @@ class DockingProblem(Thread):
                                   'cadena').format(self.ligand_path))
             self.ligand_chain = ligand_model.child_list[0]
             self.ligand_chain.id = 'Z'
-            cavities_model = parser.get_structure('cavities',
-                                                  self.cavities_path)[0]
-            if len(cavities_model) != 1:
-                raise ValueError(('las cavidades ({0}) deben estar en una sola'
-                                  ' cadena').format(self.cavities_path))
-            self.cavities_chain = cavities_model.child_list[0]
-            for residue in self.cavities_chain.copy():
-                self.cavities_chain.detach_child(residue.id)
-                residue.id = (' ', residue.id[1], ' ')
-                self.cavities_chain.add(residue)
-            self.cavities_chain.id = 'C'
             self.original = Structure('dockedpair')
             self.original.add(self.protein_model)
             self.original[0].add(self.ligand_chain)
-            self.original.add(Model(1))
-            self.original[1].add(self.cavities_chain)
 
         def prepare_wdtree():
             if path.exists(path.join(gmx.TEMPDIR,gmx.ROOT)):
@@ -134,19 +121,37 @@ class DockingProblem(Thread):
                     del centro de la cavidad.
 
         """
+        def calc_maxradius():
+            min_coord = np.array((0, 0, 0), 'f')
+            max_coord = np.array((0, 0, 0), 'f')
+            for chain in self.protein_model:
+                for res in chain:
+                    for atom in res:
+                        min_coord = np.array(map(min, atom.coord, min_coord),
+                                             'f')
+                        max_coord = np.array(map(max, atom.coord, max_coord),
+                                             'f')
+            delta_coord = max_coord - min_coord
+            self.protein_radius = sum(delta_coord * delta_coord) / 2
+            min_coord = np.array((0, 0, 0), 'f')
+            max_coord = np.array((0, 0, 0), 'f')
+            for res in self.ligand_chain:
+                for atom in res:
+                    min_coord = np.array(map(min, atom.coord, min_coord), 'f')
+                    max_coord = np.array(map(max, atom.coord, max_coord), 'f')
+            delta_coord = max_coord - min_coord
+            self.ligand_radius = sum(delta_coord * delta_coord) / 2
+            self.ligprot_ratio = self.protein_radius/self.ligand_radius
+            self.max_radius = self.protein_radius + 2*self.ligand_radius
 
-        self.lise_rltt = map(lambda cav: exp(cav['R'].bfactor),
-                             self.cavities_chain)
-        for i in xrange(1, len(self.lise_rltt)):
-            self.lise_rltt[i] += self.lise_rltt[i-1]
-        lise_max = self.lise_rltt.pop()
-        self.lower = np.array((     0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
-        self.upper = np.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
+        calc_maxradius()
+        self.lower = np.array(( 0.0,  0.0,             0.0,  0.0,  0.0), 'f')
+        self.upper = np.array((2*pi, 2*pi, self.max_radius, 2*pi, 2*pi), 'f')
         self.span = self.upper - self.lower
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(pi*pair.shift - pair.cavity.bfactor)
+        return pair.free_energy() + exp(pair.shift / self.ligprot_ratio)
 
     @abstractmethod
     def estimate_progress(self):

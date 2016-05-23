@@ -176,9 +176,9 @@ class gmx():
             str_energy = gmx.regexp_energy.search(err)
             if str_energy:
                 final_energy = float(str_energy.group().split('=')[-1].strip())    
-            new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
-            if not path.isfile(path.join(gmx.gmx_path,new_name)):
-                rename(path.join(gmx.gmx_path,dockedpair),path.join(gmx.gmx_path,new_name))
+            # new_name = '{0}_{1}_{2}_{3}.pdb'.format(dockedpair.split('.')[0],generation,final_energy,hash_)
+            # if not path.isfile(path.join(gmx.gmx_path,new_name)):
+            #     rename(path.join(gmx.gmx_path,dockedpair),path.join(gmx.gmx_path,new_name))
         except ValueError:
             raise ValueError('Energia erronea')                            
         return final_energy

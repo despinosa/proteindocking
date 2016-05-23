@@ -30,23 +30,19 @@ class DockedPair(object):
         super(DockedPair, self).__init__()
         self.structure = main.original.copy()
         self.ligand_chain = self.structure[0]['Z']
-        self.cavities_chain = self.structure[1]['C']
         self.main = main
         self.hash = arr.hash
         self.decode(arr)
 
     def decode(self, arr):
-        lise_spin = bisect(self.main.lise_rltt, arr[0])
-        self.cavity = self.cavities_chain[lise_spin]['R']
-        rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
+        rotation = rotaxis2m(arr[0], Vector(0, 0, 1))
         origin = np.array((0, 0, 0), 'f')
         self.ligand_chain.transform(rotation, origin)
-        rotation = rotaxis2m(arr[2], Vector(0, 1, 0))
-        self.shift = self.cavity.occupancy * arr[3]
-        origin = (np.array((self.shift * sin(arr[4]) * cos(arr[5]),
-                            self.shift * sin(arr[4]) * sin(arr[5]),
-                            self.shift * cos(arr[4])), 'f')
-                  + self.cavity.coord)
+        rotation = rotaxis2m(arr[1], Vector(0, 1, 0))
+        self.shift = arr[2]
+        origin = (np.array((self.shift * sin(arr[3]) * cos(arr[4]),
+                            self.shift * sin(arr[3]) * sin(arr[4]),
+                            self.shift * cos(arr[3])), 'f'))
         self.ligand_chain.transform(rotation, origin)
 
     def to_file(self, pdb_path, select=model0):
