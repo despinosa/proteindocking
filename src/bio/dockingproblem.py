@@ -121,6 +121,8 @@ class DockingProblem(Thread):
         gmx.preprocess(self)                      
         load_data()
         self.encode()
+        self.prev_gen = 0
+        self.prev_best = float('inf')
         self.log = open('log_{}.txt'.format(uuid4()), 'w+')
 
     def encode(self):
