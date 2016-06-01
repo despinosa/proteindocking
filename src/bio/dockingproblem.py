@@ -139,14 +139,13 @@ class DockingProblem(Thread):
                     del centro de la cavidad.
 
         """
-
-        self.lise_rltt = map(lambda cav: exp(cav['R'].bfactor),
-                             self.cavities_chain)
-        for i in xrange(1, len(self.lise_rltt)):
-            self.lise_rltt[i] += self.lise_rltt[i-1]
-        lise_max = self.lise_rltt.pop()
-        self.lower = np.array((     0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
-        self.upper = np.array((lise_max, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
+        # self.lise_rltt = map(lambda cav: exp(cav['R'].bfactor),
+        #                      self.cavities_chain)
+        # for i in xrange(1, len(self.lise_rltt)):
+        #     self.lise_rltt[i] += self.lise_rltt[i-1]
+        # lise_max = self.lise_rltt.pop()
+        self.lower = np.array((0.0,  0.0,  0.0, 0.0,  0.0,  0.0), 'f')
+        self.upper = np.array((1.0, 2*pi, 2*pi, 1.0, 2*pi, 2*pi), 'f')
         self.span = self.upper - self.lower
 
     def fitness(self, arr):
