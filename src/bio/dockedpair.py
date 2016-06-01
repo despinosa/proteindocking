@@ -36,8 +36,9 @@ class DockedPair(object):
         self.decode(arr)
 
     def decode(self, arr):
-        lise_spin = bisect(self.main.lise_rltt, arr[0])
-        self.cavity = self.cavities_chain[lise_spin]['R']
+        # lise_spin = bisect(self.main.lise_rltt, arr[0])
+        spin = int(arr[0] * len(self.cavities_chain))
+        self.cavity = self.cavities_chain[spin]['R']
         rotation = rotaxis2m(arr[1], Vector(0, 0, 1))
         origin = np.array((0, 0, 0), 'f')
         self.ligand_chain.transform(rotation, origin)

@@ -2,6 +2,10 @@ aging_scheme_factor=3
 pop_size=35
 mutate_rate=0.1
 mating_rate=0.8
+<<<<<<< HEAD
 aging_scheme=fibonacci
+=======
+aging_scheme=exponential
+>>>>>>> origin/otro-alps
 max_generations=25
 n_layers=4
