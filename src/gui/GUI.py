@@ -21,7 +21,7 @@ class GUI(Toplevel):
         if not self.validate_gmx():
             tkMessageBox.showinfo(self.TITLE,"Add gmx to environment variables")
             return
-        Toplevel.__init__(self,master.root,height=400,width=750)        
+        Toplevel.__init__(self,master.root,height=400,width=900)        
         self.resizable(width=FALSE,height=FALSE)        
         self.wm_title(self.TITLE)
         self.center()
@@ -73,11 +73,11 @@ class GUI(Toplevel):
         self.b_ligand_itp.pack(side="right")
         self.b_cavities.pack(side="right")
         self.b_output.pack(side="right")
-        self.b_protein_pdb.place(x=620,y=37)
-        self.b_ligand_pdb.place(x=620,y=77)
-        self.b_ligand_itp.place(x=620,y=127)
-        self.b_cavities.place(x=620,y=177)
-        self.b_output.place(x=620,y=227)
+        self.b_protein_pdb.place(x=680,y=37)
+        self.b_ligand_pdb.place(x=680,y=77)
+        self.b_ligand_itp.place(x=680,y=127)
+        self.b_cavities.place(x=680,y=177)
+        self.b_output.place(x=680,y=227)
         #Textboxes
         self.txt_protein_pdb = Text(self,height=1, width=75,stat=DISABLED)
         self.txt_ligand_pdb = Text(self,height=1, width=75,state=DISABLED)
@@ -109,7 +109,7 @@ class GUI(Toplevel):
         self.progress.set('')
         self.l_progress = Label(self, textvariable=self.progress,padx=10,pady=10)        
         self.l_progress.pack(side="top")
-        self.l_progress.place(x=520)
+        self.l_progress.place(x=620)
         self.lift()
         filterwarnings('ignore')
     #Validations        

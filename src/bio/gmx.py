@@ -11,7 +11,7 @@ from datetime import datetime
 
 class GMXError(Exception): pass
 
-class gmx():
+class gmx:
 
     #Directorios
     TEMPDIR = gettempdir()        
