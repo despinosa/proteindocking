@@ -38,6 +38,7 @@ class ALPSLayer(Thread):
 
     def redistribute(self):
         if self.prev_layer is None:
+            self.main.log.write('{}\t{}\n'.format(self.main.generation, self.main.best.score))
             self.main.generation += 1
             self.main.remaining_gens -= 1
             if self.main.generation % self.max_age == 0:

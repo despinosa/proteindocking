@@ -10,7 +10,7 @@ from Bio.PDB.Structure import Structure
 from collections import namedtuple
 from dockedpair import DockedPair
 from gmx import gmx
-from math import exp, pi
+from math import exp, pi, sqrt
 from os import mkdir,path,remove,getcwd,makedirs,environ
 from re import match, search
 from shutil import rmtree, copy, copytree
@@ -121,37 +121,28 @@ class DockingProblem(Thread):
                     del centro de la cavidad.
 
         """
-        def calc_maxradius():
-            min_coord = np.array((0, 0, 0), 'f')
-            max_coord = np.array((0, 0, 0), 'f')
+        def calc_radii():
+            self.protein_radius = 0
             for chain in self.protein_model:
                 for res in chain:
                     for atom in res:
-                        min_coord = np.array(map(min, atom.coord, min_coord),
-                                             'f')
-                        max_coord = np.array(map(max, atom.coord, max_coord),
-                                             'f')
-            delta_coord = max_coord - min_coord
-            self.protein_radius = sum(delta_coord * delta_coord) / 2
-            min_coord = np.array((0, 0, 0), 'f')
-            max_coord = np.array((0, 0, 0), 'f')
+                        self.protein_radius = max(np.linalg.norm(atom.coord),
+                                                  self.protein_radius)
+            self.ligand_radius = 0
             for res in self.ligand_chain:
                 for atom in res:
-                    min_coord = np.array(map(min, atom.coord, min_coord), 'f')
-                    max_coord = np.array(map(max, atom.coord, max_coord), 'f')
-            delta_coord = max_coord - min_coord
-            self.ligand_radius = sum(delta_coord * delta_coord) / 2
-            self.ligprot_ratio = self.protein_radius/self.ligand_radius
-            self.max_radius = self.protein_radius + 2*self.ligand_radius
+                    self.ligand_radius = max(np.linalg.norm(atom.coord),
+                                             self.ligand_radius)
+            return self.protein_radius + self.ligand_radius
 
-        calc_maxradius()
-        self.lower = np.array(( 0.0,  0.0,             0.0,  0.0,  0.0), 'f')
-        self.upper = np.array((2*pi, 2*pi, self.max_radius, 2*pi, 2*pi), 'f')
+        radii_sum = calc_radii()
+        self.lower = np.array(( 0.0,  0.0,       0.0,  0.0,  0.0), 'f')
+        self.upper = np.array((2*pi, 2*pi, radii_sum, 2*pi, 2*pi), 'f')
         self.span = self.upper - self.lower
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(pair.shift / self.ligprot_ratio)
+        return pair.free_energy() + exp(pair.shift/self.ligand_radius)
 
     @abstractmethod
     def estimate_progress(self):

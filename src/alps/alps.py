@@ -44,6 +44,7 @@ class ALPS(object):
             self.layers[i].next_layer = self.layers[i+1]
         self.best = Chromosome(self, 0)
         self.best.eval_fitness()
+        self.log = open('scorelog.csv', 'w')
 
     @abstractmethod
     def fitness(self, arr):
@@ -56,6 +57,7 @@ class ALPS(object):
     def join_layers(self):
         for layer in self.layers:
             layer.join()
+        self.log.close()
 
 
 if __name__ == '__main__':
