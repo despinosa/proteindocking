@@ -156,6 +156,8 @@ class DockingProblem(Thread):
         else:
             self.log.write('{0}\t,\t{1}\n'.format(self.prev_gen,
                                                   self.prev_best))
+            bestpair = DockedPair(self,self.best)
+            bestpair.to_file('best_{0}_{1}_{2}.pdb'.format(self.prev_gen,self.prev_best,self.uuid))
             self.prev_gen = self.generation
         return score
 
