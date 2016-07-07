@@ -106,9 +106,9 @@ class DockingProblem(Thread):
         prepare_wdfiles()
         gmx.preprocess(self)                      
         load_data()
-        self.encode()        
+        self.calc_encoding()        
 
-    def encode(self):
+    def calc_encoding(self):
         """Codifica el problema en un arreglo de longitud 6.
 
         Se construye una ruleta de selección para determinar la cavidad
@@ -142,7 +142,7 @@ class DockingProblem(Thread):
 
     def fitness(self, arr):        
         pair = DockedPair(self, arr)
-        return pair.free_energy() + exp(pair.shift/self.ligand_radius)
+        return pair.free_energy() # + exp(pair.shift/self.ligand_radius)
 
     @abstractmethod
     def estimate_progress(self):

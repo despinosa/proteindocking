@@ -40,9 +40,9 @@ class DockedPair(object):
         self.ligand_chain.transform(rotation, origin)
         rotation = rotaxis2m(arr[1], Vector(0, 1, 0))
         self.shift = arr[2]
-        origin = (np.array((self.shift * sin(arr[3]) * cos(arr[4]),
-                            self.shift * sin(arr[3]) * sin(arr[4]),
-                            self.shift * cos(arr[3])), 'f'))
+        origin = np.array((self.shift * sin(arr[3]) * cos(arr[4]),
+                           self.shift * sin(arr[3]) * sin(arr[4]),
+                           self.shift * cos(arr[3])), 'f')
         self.ligand_chain.transform(rotation, origin)
 
     def to_file(self, pdb_path, select=model0):
