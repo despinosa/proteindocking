@@ -50,9 +50,12 @@ class DockedPair(object):
         out.set_structure(self.structure)        
         out.save(pdb_path, select) #, self.model0select)  
 
-    def free_energy(self):
+    def free_energy(self, steep=False):
         pdb_path = path.join(gmx.gmx_path,
                              'dockedpair_{0}.pdb'.format(current_thread().name))
         self.to_file(pdb_path)
-        return gmx.calculate_fitness(self.main.generation, self.hash)
+        energy = gmx.calculate_fitness(self.main.generation, self.hash, steep)
+        if steep:
+            raise NotImplementedError # TO
+        return energy
 

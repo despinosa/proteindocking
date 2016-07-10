@@ -26,8 +26,9 @@ class gmx():
     forcefields = {0:'charmm27',1:'gromos54a7_atb_pd'}
 
     #Archivos constantes para gmx
-    topol_with_ligand_file = 'topol_with_ligand.top'   
-    em_file = 'em.mdp'      
+    topol_with_ligand_file = 'topol_with_ligand.top'
+    em_file = 'em.mdp'
+    emsteep_file = 'emsteep.mdp'
     topol_file = 'topol.top'
     confgro_file = 'conf.gro'
     em_aux_tpr_file = 'em_aux.tpr'         
@@ -140,13 +141,12 @@ class gmx():
         environ['GMX_MAXBACKUP'] = '-1'
 
     @staticmethod
-    def calculate_fitness(generation,hash_):        
+    def calculate_fitness(generation,hash_,steep=False):        
         thread_name = current_thread().name 
         dockedpair = 'dockedpair_{0}.pdb'.format(thread_name)
         if not(path.isfile(path.join(gmx.files_path,gmx.em_file)) and path.isfile(path.join(gmx.files_path,gmx.topol_with_ligand_file)) and path.isfile(path.join(gmx.gmx_path,dockedpair))):
             raise OSError('Faltan archivos para el calculo de energia')
-           
-        em_file_path = path.join(gmx.files_path,gmx.em_file).encode('string-escape')
+        em_file_path = path.join(gmx.files_path, gmx.em_file if not steep else gmx.emsteep_file).encode('string-escape')
         topol_with_ligand_file_path = path.join(gmx.files_path,gmx.topol_with_ligand_file).encode('string-escape')
         em_thread_tpr_out = path.join(gmx.gmx_path,'em_{0}.tpr'.format(thread_name)).encode('unicode-escape')        
         dockedpair_file = path.join(gmx.gmx_path,dockedpair).encode('string-escape')
@@ -156,7 +156,7 @@ class gmx():
         ener_out = path.join(gmx.gmx_path,'ener.edr').encode('unicode-escape')
         mdlog_out = path.join(gmx.gmx_path,'md.log').encode('unicode-escape')
         
-        final_energy = float('inf')                
+        final_energy = float('inf')
         cmd_fitness = [['gmx','grompp','-v','-f',em_file_path,'-c',dockedpair_file,'-o',em_thread_tpr_out,
                         '-p',topol_with_ligand_file_path,'-po',mdout_out,'-maxwarn','2'],
                        ['gmx','mdrun','-v','-s',em_thread_tpr_out.encode('string-escape'),'-o',traj_out,

@@ -56,14 +56,16 @@ class DockingProblem(Thread):
             mkdir(gmx.files_path)
             mkdir(gmx.gmx_path)
 
-        def prepare_wdfiles():                                    
+        def prepare_wdfiles():
             copy(ligand_path, path.join(gmx.files_path,
                                         '{0}.pdb'.format(self.ligand_id)))
             copy(itp_path, path.join(gmx.files_path,
                                      '{0}.itp'.format(self.ligand_id)))
             copy(protein_path, gmx.files_path)
-            copy(cavities_path, gmx.files_path)                        
+            copy(cavities_path, gmx.files_path)
             copy(path.join(preloaded_files,'files', gmx.em_file),
+                 gmx.files_path)
+            copy(path.join(preloaded_files,'files', gmx.emsteep_file),
                  gmx.files_path)
             if(self.forcefield == gmx.GROMOS54A7):
                 environ['GMXDATA'] = path.join(gmx.files_path)
@@ -140,9 +142,9 @@ class DockingProblem(Thread):
         self.upper = np.array((2*pi, 2*pi, radii_sum, 2*pi, 2*pi), 'f')
         self.span = self.upper - self.lower
 
-    def fitness(self, arr):        
+    def fitness(self, arr, steep=False):
         pair = DockedPair(self, arr)
-        return pair.free_energy() # + exp(pair.shift/self.ligand_radius)
+        return pair.free_energy(steep) # + exp(pair.shift/self.ligand_radius)
 
     @abstractmethod
     def estimate_progress(self):
