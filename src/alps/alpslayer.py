@@ -20,9 +20,9 @@ class ALPSLayer(Thread):
         self.prev_layer = prev_layer
         self.next_layer = next_layer
         u_ln_u = self.main.pop_size * log(self.main.pop_size)
-        to_takeover = (self.main.max_generations / self.max_age) ** 2
+        takeover_inv = (self.max_age / self.main.max_generations) ** 2
         self.tourn_size = max(self.main.n_parents,
-                              int(round(u_ln_u * exp(1 / to_takeover))))
+                              int(round(u_ln_u * exp(takeover_inv))))
         self.population = []
         self.copied = Event()
         self.copied.clear()

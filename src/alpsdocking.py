@@ -80,7 +80,7 @@ class ALPSDocking(DockingProblem, ALPS):
                                         split('.')[0], docking.ligand_id))
         pair.to_file(docking.pair_file,
                      Select())
-        out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+        out_file.write('mejor:\t{0}\n'.format(docking.best))
         out_file.close()
 
     def _run_pbar(docking, output_path):
@@ -110,7 +110,7 @@ class ALPSDocking(DockingProblem, ALPS):
                                         split('.')[0], docking.ligand_id))
         pair.to_file(best_path,
                      Select())
-        out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+        out_file.write('mejor:\t{0}\n'.format(docking.best))
         out_file.close()      
         return best_path
 
@@ -131,7 +131,7 @@ class ALPSDocking(DockingProblem, ALPS):
                                'best_{0}_{1}.pdb'.format(docking.protein_filename.
                                         split('.')[0], docking.ligand_id)),
                      Select())
-        out_file.write('mejor:\t{0}\n\n'.format(docking.best))
+        out_file.write('mejor:\t{0}\n'.format(docking.best))
         out_file.close()
 
 if __name__ == "__main__":
