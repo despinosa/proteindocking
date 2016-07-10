@@ -12,14 +12,14 @@ from Bio.PDB.PDBIO import Select
 from os import path
 
 class ALPSDocking(DockingProblem, ALPS):
-    def __init__(self, ligand_path, protein_path, cavities_path, itp_path, preloaded_files_path,
-                 forcefield):        
+    def __init__(self, ligand_path, protein_path, cavities_path, itp_path,
+                 preloaded_files_path, forcefield):        
         super(ALPSDocking, self).__init__()  
         def config_file():
             f = open(path.join(preloaded_files_path,'files','config'), 'r')
             self.config_args = []
             for line in f:
-                self.config_args.append(line.split('=')[-1])                 
+                self.config_args.append(line.split('=')[-1])
             if(len(self.config_args) is not 7):
                 raise Exception('Archivo de configuracion erroneo.')                                
         config_file()
@@ -51,12 +51,14 @@ class ALPSDocking(DockingProblem, ALPS):
 
     run = solve
 
-    def _run_pymol(docking, output_path,pb_queue):    
+    def _run_pymol(docking, output_path,pb_queue):
         from datetime import datetime
         from sys import stdout,exc_info
-        from time import sleep    
-        from os import path    
+        from time import sleep
+        from os import path
+        from psutil import cpu_times_percent
 
+        cpu_times_percent()
         docking.start()
         start = datetime.now()        
         stdout.write('Processing...\n')
@@ -71,6 +73,7 @@ class ALPSDocking(DockingProblem, ALPS):
         docking.join()        
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
+        out_file.write('cpu:\t{0}\n'.format(cpu_times_percent()[0]))
         pair = DockedPair(docking, docking.best)
         docking.pair_file = path.join(output_path,
                                'best_{0}_{1}.pdb'.format(docking.protein_filename.
@@ -84,9 +87,11 @@ class ALPSDocking(DockingProblem, ALPS):
         from datetime import datetime
         from progressbar import ProgressBar, ReverseBar, ETA, Bar, Percentage     
         from os import path
+        from psutil import cpu_times_percent
 
         widgets = [Bar('>'), Percentage(),' ', ETA(), ' ', ReverseBar('<')]
-        pbar = ProgressBar(widgets=widgets).start()  
+        pbar = ProgressBar(widgets=widgets).start()
+        cpu_times_percent()
         docking.start()
         start = datetime.now()  
         while docking.estimate_progress() < 1 - 1e-15:
@@ -98,6 +103,7 @@ class ALPSDocking(DockingProblem, ALPS):
         docking.join()
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
+        out_file.write('cpu:\t{0}\n'.format(cpu_times_percent()[0]))
         pair = DockedPair(docking, docking.best)
         best_path = path.join(output_path,
                                'best_{0}_{1}.pdb'.format(docking.protein_filename.
@@ -111,11 +117,15 @@ class ALPSDocking(DockingProblem, ALPS):
     def _run_silent(docking, output_path):
         from datetime import datetime    
         from os import path
+        from psutil import cpu_times_percent
+
+        cpu_times_percent()
         docking.start()
         start = datetime.now()  
         docking.join()
         out_file = open(path.join(output_path,'info_best'),'w+')
         out_file.write('tiempo:\t{0}\n'.format(datetime.now()-start))
+        out_file.write('cpu:\t{0}\n'.format(cpu_times_percent()[0]))
         pair = DockedPair(docking, docking.best)
         pair.to_file(path.join(output_path,
                                'best_{0}_{1}.pdb'.format(docking.protein_filename.
