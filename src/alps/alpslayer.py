@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import Queue
+
 from bisect import insort
 from chromosome import Chromosome
 from heapq import nsmallest
 from itertools import repeat
 from math import exp, log
 from random import randint, random, sample
-from sys import exc_info
 from threading import Event, Lock, Thread, current_thread
-from traceback import format_exception
 
-class ALPSLayer(Thread):
+class ALPSLayer(object): # Thread):
     def __init__(self, main, i, max_age, prev_layer=None, next_layer=None):
         super(ALPSLayer, self).__init__()
         self.main = main
@@ -23,11 +21,6 @@ class ALPSLayer(Thread):
         takeover_inv = (float(self.max_age) / self.main.max_generations)
         self.tourn_size = int(round(self.main.n_parents * u_ln_u**takeover_inv))
         self.population = []
-        self.copied = Event()
-        self.copied.clear()
-        self.replaced = Event()
-        self.replaced.clear()
-        self.ex_queue = Queue.Queue()
 
     def rand_pop(self):
         del self.population[:]
@@ -82,31 +75,11 @@ class ALPSLayer(Thread):
         if self.prev_layer is not None:
             if self.main.generation > self.prev_layer.max_age:
                 pool += self.prev_layer.population[:] #! bloquear
-        self.copied.set()
         offspring = reproduce(pool)
         offspring = mutate(offspring)
         offspring.sort()
-        if self.next_layer is not None:
-            self.next_layer.copied.wait()
-            self.next_layer.copied.clear()
-        if self.prev_layer is not None:
-            self.prev_layer.replaced.wait()
-            self.prev_layer.replaced.clear()
         self.population = self.main.elitism(offspring, self.population)
         if self.next_layer is not None:
             self.redistribute()
-        try: self.main.best = min(self.main.best, self.population[0])
-        except IndexError: pass
-        self.replaced.set()
-
-    def run(self):
-        try:
-            if self.prev_layer is None:
-                self.rand_pop()
-            while not self.main.stop_condition():
-                self.iterate()
-            self.copied.set()
-            self.replaced.set()
-        except Exception as e:
-            exc_type, exc_value, exc_traceback = exc_info()
-            self.ex_queue.put(repr(format_exception(exc_type, exc_value,exc_traceback)) + repr(e))            
+        if len(self.population) > 0:
+            self.main.best = min(self.main.best, self.population[0])

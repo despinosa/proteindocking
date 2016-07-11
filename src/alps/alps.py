@@ -1,4 +1,4 @@
-    #!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta, abstractmethod
@@ -7,6 +7,9 @@ from chromosome import Chromosome
 from definitions.agingscheme import linear
 from definitions.crossover import single_point
 from math import log
+from Queue import Queue
+from sys import exc_info
+from traceback import format_exception
 
 class ALPSException(Exception): pass
 
@@ -45,19 +48,22 @@ class ALPS(object):
         self.best = Chromosome(self, 0)
         self.best.eval_fitness()
         self.log = open('scorelog.csv', 'w')
+        self.ex_queue = Queue()
 
     @abstractmethod
     def fitness(self, arr):
         pass
 
-    def start_layers(self):
-        for layer in self.layers:
-            layer.start()
-
-    def join_layers(self):
-        for layer in self.layers:
-            layer.join()
-        self.log.close()
+    def run(self):
+        try:
+            self.layers[0].rand_pop()
+            while not self.stop_condition():
+                for layer in self.layers:
+                    layer.iterate()
+            self.log.close()
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = exc_info()
+            self.ex_queue.put(str(format_exception(exc_type, exc_value,exc_traceback)) + str(e))
 
 
 if __name__ == '__main__':

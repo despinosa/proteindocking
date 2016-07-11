@@ -35,21 +35,16 @@ class ALPSDocking(DockingProblem, ALPS):
                              itp_path, forcefield, preloaded_files_path)
         ALPS.setup(self, pop_size, mutate_rate, mating_rate, gen_limit,
                    enhanced, fibo, single_point, max_generations, n_layers)
-               
+
+    run = ALPS.run
+    solve = run
 
     def estimate_progress(self):
         return float(self.generation) / self.max_generations
 
     def check_errors(self):        
-        for layer in self.layers:
-            if not layer.ex_queue.empty():                
-                return layer.ex_queue.get(0)
-
-    def solve(self):
-        self.start_layers() 
-        self.join_layers()
-
-    run = solve
+        if not self.ex_queue.empty():
+            return self.ex_queue.get(0)
 
     def _run_pymol(docking, output_path,pb_queue):
         from datetime import datetime
@@ -147,7 +142,7 @@ if __name__ == "__main__":
     
     (ligand_path, protein_path, cavities_path, itp_path, forcefield,
         output_path) = argv[1:7]
-    logger = None    
+    logger = None
     try:
         docking = ALPSDocking(ligand_path, protein_path, cavities_path, itp_path, output_path, int(forcefield))        
         #docking._run_silent(output_path)
@@ -162,4 +157,4 @@ if __name__ == "__main__":
         if logger == None:
             logging.basicConfig(filename='exceptions_{0}.log'.format(datetime.now().strftime('%Y%m%d%H%M%S%f')),level=logging.DEBUG)
             logger = logging.getLogger('Protein docking')                
-        logger.info(repr(format_exception(exc_type, exc_value,exc_traceback)) + repr(e))
+        logger.info(str(format_exception(exc_type, exc_value,exc_traceback)) + str(e))
